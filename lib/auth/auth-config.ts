@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db/prisma";
 import bcrypt from "bcryptjs";
 import { authenticator } from "otplib";
 import { Role } from "@prisma/client";
+import { authConfig } from "@/auth.config";
 
 declare module "next-auth" {
   interface Session {
@@ -19,11 +20,7 @@ declare module "next-auth" {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: "jwt" },
-  pages: {
-    signIn: "/login",
-    error: "/auth/error",
-  },
+  ...authConfig,
   providers: [
     Credentials({
       credentials: {
@@ -94,22 +91,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    jwt: async ({ token, user }) => {
-      if (user) {
-        token.role = user.role;
-        token.id = user.id;
-      }
-      return token;
-    },
-    session: async ({ session, token }) => {
-      if (session.user) {
-        session.user.role = token.role as Role;
-        session.user.id = token.id as string;
-      }
-      return session;
-    },
-  },
 });
 
 // Middleware helper for role-based access control
