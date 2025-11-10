@@ -1,0 +1,203 @@
+// Prisma Schema for ACM Research Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  RESEARCHER
+  MANAGER
+  ADMIN
+}
+
+enum QueryStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum FeedbackType {
+  LIKE
+  DISLIKE
+  WRONG
+  IMPORTANT
+  IRRELEVANT
+}
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String
+  password          String    // Hashed
+  role              Role      @default(RESEARCHER)
+  department        String?
+  mfaEnabled        Boolean   @default(false)
+  mfaSecret         String?
+  emailVerified     DateTime?
+  lastLoginAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  queries           Query[]
+  feedback          Feedback[]
+  contributions     KnowledgeContribution[]
+  sessions          Session[]
+  auditLogs         AuditLog[]
+
+  @@index([email])
+}
+
+model Query {
+  id                String      @id @default(cuid())
+  userId            String
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  originalQuery     String      // User's original query
+  refinedQuery      String?     // LLM-refined query
+  intent            Json?       // Structured intent
+
+  sources           String[]    // ["openalex", "patents", "pubmed"]
+  llms              String[]    // ["claude", "gpt4", "gemini"]
+
+  status            QueryStatus @default(PENDING)
+  startedAt         DateTime    @default(now())
+  completedAt       DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  responses         Response[]
+  feedback          Feedback[]
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+model Response {
+  id                String    @id @default(cuid())
+  queryId           String
+  query             Query     @relation(fields: [queryId], references: [id], onDelete: Cascade)
+
+  source            String    // "openalex", "claude", etc.
+  rawData           Json      // Full API response
+  summary           String    // Key summary
+  fullContent       String    @db.Text
+
+  relevanceScore    Float?
+  citationCount     Int?
+  metadata          Json?
+
+  createdAt         DateTime  @default(now())
+
+  feedback          Feedback[]
+
+  @@index([queryId])
+  @@index([source])
+}
+
+model Feedback {
+  id                String        @id @default(cuid())
+  userId            String
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  queryId           String?
+  query             Query?        @relation(fields: [queryId], references: [id], onDelete: Cascade)
+  responseId        String?
+  response          Response?     @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  type              FeedbackType
+  importance        Int?          // 1-5 scale
+  comment           String?       @db.Text
+
+  createdAt         DateTime      @default(now())
+
+  @@index([userId, createdAt])
+  @@index([queryId])
+  @@index([responseId])
+}
+
+model KnowledgeContribution {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  responseId        String    // Reference to approved response
+  category          String    // Ontology category
+  tags              String[]
+
+  addedToGraph      Boolean   @default(false)
+  graphNodeId       String?   // Neo4j node ID
+
+  approvedBy        String?   // Manager/Admin who approved
+  approvedAt        DateTime?
+
+  createdAt         DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@index([addedToGraph])
+}
+
+model ResearchDigest {
+  id                String    @id @default(cuid())
+  date              DateTime  @default(now())
+
+  sources           Json      // Summary of what was collected
+  totalArticles     Int
+  topTopics         String[]
+  keyFindings       Json
+
+  status            String    @default("completed")
+
+  createdAt         DateTime  @default(now())
+
+  @@index([date])
+}
+
+model DataSource {
+  id                String    @id @default(cuid())
+  name              String    @unique
+  type              String    // "api", "database", "web"
+  endpoint          String?
+  apiKey            String?   // Encrypted
+  config            Json      // Source-specific configuration
+  enabled           Boolean   @default(true)
+
+  lastSync          DateTime?
+  syncFrequency     String    @default("daily")
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([enabled])
+}
+
+model Session {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token             String    @unique
+  expiresAt         DateTime
+  createdAt         DateTime  @default(now())
+
+  @@index([userId])
+  @@index([token])
+}
+
+model AuditLog {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action            String
+  resource          String
+  details           Json?
+  ipAddress         String?
+  userAgent         String?
+  createdAt         DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@index([action])
+}
