@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import KnowledgeGraphVisualization from "@/components/knowledge/KnowledgeGraphVisualization";
 
@@ -9,7 +9,7 @@ interface GraphData {
   links: any[];
 }
 
-export default function KnowledgeGraphPage() {
+function KnowledgeGraphContent() {
   const searchParams = useSearchParams();
   const queryId = searchParams.get("queryId");
 
@@ -115,5 +115,27 @@ export default function KnowledgeGraphPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function KnowledgeGraphPage() {
+  return (
+    <Suspense fallback={
+      <div className="p-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">
+            Knowledge Graph Visualization
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Loading knowledge graph...
+          </p>
+        </div>
+        <div className="flex items-center justify-center h-96">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    }>
+      <KnowledgeGraphContent />
+    </Suspense>
   );
 }
