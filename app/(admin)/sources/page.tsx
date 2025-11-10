@@ -32,13 +32,13 @@ export default async function SourcesAdminPage() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-sm text-gray-500 mb-1">Active</div>
             <div className="text-3xl font-bold text-green-600">
-              {sources.filter((s) => s.enabled).length}
+              {sources.filter((s: { enabled: boolean }) => s.enabled).length}
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-sm text-gray-500 mb-1">Inactive</div>
             <div className="text-3xl font-bold text-red-600">
-              {sources.filter((s) => !s.enabled).length}
+              {sources.filter((s: { enabled: boolean }) => !s.enabled).length}
             </div>
           </div>
         </div>
@@ -63,7 +63,7 @@ export default async function SourcesAdminPage() {
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {sources.map((source) => (
+              {sources.map((source: any) => (
                 <div key={source.id} className="p-6">
                   <div className="flex items-start justify-between mb-3">
                     <div>

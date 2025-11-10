@@ -47,19 +47,19 @@ export default async function UsersAdminPage() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-sm text-gray-500 mb-1">Researchers</div>
             <div className="text-3xl font-bold text-green-600">
-              {users.filter((u) => u.role === "RESEARCHER").length}
+              {users.filter((u: any) => u.role === "RESEARCHER").length}
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-sm text-gray-500 mb-1">Managers</div>
             <div className="text-3xl font-bold text-blue-600">
-              {users.filter((u) => u.role === "MANAGER").length}
+              {users.filter((u: any) => u.role === "MANAGER").length}
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-sm text-gray-500 mb-1">Admins</div>
             <div className="text-3xl font-bold text-red-600">
-              {users.filter((u) => u.role === "ADMIN").length}
+              {users.filter((u: any) => u.role === "ADMIN").length}
             </div>
           </div>
         </div>
@@ -101,7 +101,7 @@ export default async function UsersAdminPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {users.map((user) => (
+                {users.map((user: any) => (
                   <tr key={user.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>

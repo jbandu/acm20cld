@@ -60,6 +60,18 @@ export default async function ManagerDashboard() {
                 Review and approve research contributions
               </p>
             </Link>
+
+            <Link
+              href="/manager/rate-limits"
+              className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition p-6"
+            >
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                API Rate Limits
+              </h3>
+              <p className="text-gray-500">
+                Monitor user API usage and rate limits
+              </p>
+            </Link>
           </div>
         </div>
       </main>

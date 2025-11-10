@@ -11,6 +11,15 @@ export function QueryBuilder() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Advanced filters
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [minCitations, setMinCitations] = useState<number | "">("");
+  const [publicationType, setPublicationType] = useState<string>("all");
+  const [openAccessOnly, setOpenAccessOnly] = useState(false);
+  const [maxResults, setMaxResults] = useState(25);
+
   const availableSources = [
     { id: "openalex", name: "OpenAlex", description: "Scholarly works & papers" },
     { id: "pubmed", name: "PubMed", description: "Biomedical literature" },
@@ -67,7 +76,14 @@ export function QueryBuilder() {
           query,
           sources,
           llms,
-          maxResults: 25,
+          maxResults,
+          filters: {
+            dateFrom: dateFrom || undefined,
+            dateTo: dateTo || undefined,
+            minCitations: minCitations || undefined,
+            publicationType: publicationType !== "all" ? publicationType : undefined,
+            openAccessOnly,
+          },
         }),
       });
 
@@ -158,6 +174,125 @@ export function QueryBuilder() {
               </label>
             ))}
           </div>
+        </div>
+
+        {/* Advanced Filters */}
+        <div className="border-t pt-4">
+          <button
+            type="button"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-gray-900"
+          >
+            <span>Advanced Filters</span>
+            <svg
+              className={`w-5 h-5 transform transition-transform ${
+                showAdvanced ? "rotate-180" : ""
+              }`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {showAdvanced && (
+            <div className="mt-4 space-y-4 bg-gray-50 p-4 rounded-lg">
+              {/* Date Range */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Published From
+                  </label>
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                    disabled={loading}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Published To
+                  </label>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                    disabled={loading}
+                  />
+                </div>
+              </div>
+
+              {/* Minimum Citations */}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Minimum Citation Count
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={minCitations}
+                  onChange={(e) => setMinCitations(e.target.value ? parseInt(e.target.value) : "")}
+                  placeholder="e.g., 10"
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  disabled={loading}
+                />
+              </div>
+
+              {/* Publication Type */}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Publication Type
+                </label>
+                <select
+                  value={publicationType}
+                  onChange={(e) => setPublicationType(e.target.value)}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  disabled={loading}
+                >
+                  <option value="all">All Types</option>
+                  <option value="article">Journal Article</option>
+                  <option value="review">Review</option>
+                  <option value="clinical-trial">Clinical Trial</option>
+                  <option value="meta-analysis">Meta-Analysis</option>
+                  <option value="case-report">Case Report</option>
+                </select>
+              </div>
+
+              {/* Max Results */}
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Maximum Results
+                </label>
+                <input
+                  type="number"
+                  min="5"
+                  max="100"
+                  value={maxResults}
+                  onChange={(e) => setMaxResults(parseInt(e.target.value) || 25)}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  disabled={loading}
+                />
+              </div>
+
+              {/* Open Access Only */}
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={openAccessOnly}
+                  onChange={(e) => setOpenAccessOnly(e.target.checked)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  disabled={loading}
+                />
+                <span className="ml-2 text-sm text-gray-700">
+                  Open Access Only
+                </span>
+              </label>
+            </div>
+          )}
         </div>
 
         {error && (

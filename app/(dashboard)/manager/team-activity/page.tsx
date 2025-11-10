@@ -60,19 +60,19 @@ export default async function TeamActivityPage() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-sm text-gray-500 mb-1">Total Queries</div>
             <div className="text-3xl font-bold text-blue-600">
-              {users.reduce((sum, u) => sum + u._count.queries, 0)}
+              {users.reduce((sum: number, u: any) => sum + u._count.queries, 0)}
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-sm text-gray-500 mb-1">Feedback Given</div>
             <div className="text-3xl font-bold text-green-600">
-              {users.reduce((sum, u) => sum + u._count.feedback, 0)}
+              {users.reduce((sum: number, u: any) => sum + u._count.feedback, 0)}
             </div>
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-sm text-gray-500 mb-1">Contributions</div>
             <div className="text-3xl font-bold text-purple-600">
-              {users.reduce((sum, u) => sum + u._count.contributions, 0)}
+              {users.reduce((sum: number, u: any) => sum + u._count.contributions, 0)}
             </div>
           </div>
         </div>
@@ -86,7 +86,7 @@ export default async function TeamActivityPage() {
           </div>
 
           <div className="divide-y divide-gray-200">
-            {users.map((user) => (
+            {users.map((user: any) => (
               <div key={user.id} className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -135,7 +135,7 @@ export default async function TeamActivityPage() {
                       Recent Queries:
                     </div>
                     <div className="space-y-2">
-                      {user.queries.map((query) => (
+                      {user.queries.map((query: any) => (
                         <div
                           key={query.id}
                           className="text-sm bg-gray-50 p-2 rounded"

@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth/auth-config";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { ResponseCard } from "@/components/results/ResponseCard";
+import { ExportButton } from "@/components/results/ExportButton";
 import Link from "next/link";
 
 export default async function QueryResultsPage({
@@ -52,13 +53,16 @@ export default async function QueryResultsPage({
               </Link>
               <h1 className="text-2xl font-bold text-gray-900">Query Results</h1>
             </div>
-            <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${
-                statusColors[query.status]
-              }`}
-            >
-              {query.status}
-            </span>
+            <div className="flex items-center gap-3">
+              <ExportButton query={query} />
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  statusColors[query.status]
+                }`}
+              >
+                {query.status}
+              </span>
+            </div>
           </div>
         </div>
       </header>
