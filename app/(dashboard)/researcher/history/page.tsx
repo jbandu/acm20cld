@@ -69,7 +69,7 @@ export default async function QueryHistoryPage() {
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {queries.map((query) => (
+              {queries.map((query: any) => (
                 <Link
                   key={query.id}
                   href={`/researcher/query/${query.id}`}
@@ -81,7 +81,7 @@ export default async function QueryHistoryPage() {
                         {query.originalQuery}
                       </p>
                       <div className="flex flex-wrap gap-2 mb-2">
-                        {query.sources.map((source) => (
+                        {query.sources.map((source: string) => (
                           <span
                             key={source}
                             className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs"

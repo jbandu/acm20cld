@@ -31,24 +31,30 @@ enum FeedbackType {
 }
 
 model User {
-  id                String    @id @default(cuid())
-  email             String    @unique
-  name              String
-  password          String    // Hashed
-  role              Role      @default(RESEARCHER)
-  department        String?
-  mfaEnabled        Boolean   @default(false)
-  mfaSecret         String?
-  emailVerified     DateTime?
-  lastLoginAt       DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id                        String    @id @default(cuid())
+  email                     String    @unique
+  name                      String
+  password                  String    // Hashed
+  role                      Role      @default(RESEARCHER)
+  department                String?
+  mfaEnabled                Boolean   @default(false)
+  mfaSecret                 String?
+  emailVerified             DateTime?
+  lastLoginAt               DateTime?
 
-  queries           Query[]
-  feedback          Feedback[]
-  contributions     KnowledgeContribution[]
-  sessions          Session[]
-  auditLogs         AuditLog[]
+  // Email notification preferences
+  emailNotifications        Boolean   @default(true)
+  notifyOnQueryComplete     Boolean   @default(true)
+  notifyWeeklyDigest        Boolean   @default(true)
+
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  queries                   Query[]
+  feedback                  Feedback[]
+  contributions             KnowledgeContribution[]
+  sessions                  Session[]
+  auditLogs                 AuditLog[]
 
   @@index([email])
 }
@@ -200,4 +206,44 @@ model AuditLog {
 
   @@index([userId, createdAt])
   @@index([action])
+}
+
+model PromptTemplate {
+  id                String    @id @default(cuid())
+  name              String
+  description       String?
+  category          String    // "refinement", "analysis", "summarization"
+  template          String    @db.Text
+  variables         String[]  // Variables like {query}, {context}, etc.
+  isPublic          Boolean   @default(false)
+  isDefault         Boolean   @default(false)
+
+  createdBy         String?
+  usageCount        Int       @default(0)
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([category])
+  @@index([isPublic])
+}
+
+model Annotation {
+  id                String    @id @default(cuid())
+  responseId        String
+  userId            String
+
+  content           String    @db.Text
+  highlightedText   String?   @db.Text
+  startOffset       Int?
+  endOffset         Int?
+
+  isPublic          Boolean   @default(false)
+  tags              String[]
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([responseId])
+  @@index([userId])
 }

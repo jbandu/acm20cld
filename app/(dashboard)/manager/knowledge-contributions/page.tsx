@@ -23,8 +23,8 @@ export default async function KnowledgeContributionsPage() {
     take: 50,
   });
 
-  const pendingCount = contributions.filter((c) => !c.approvedAt).length;
-  const approvedCount = contributions.filter((c) => c.approvedAt).length;
+  const pendingCount = contributions.filter((c: any) => !c.approvedAt).length;
+  const approvedCount = contributions.filter((c: any) => c.approvedAt).length;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -75,7 +75,7 @@ export default async function KnowledgeContributionsPage() {
             </div>
           ) : (
             <div className="divide-y divide-gray-200">
-              {contributions.map((contribution) => (
+              {contributions.map((contribution: any) => (
                 <div key={contribution.id} className="p-6">
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -105,7 +105,7 @@ export default async function KnowledgeContributionsPage() {
                     </div>
                     {contribution.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1">
-                        {contribution.tags.map((tag, idx) => (
+                        {contribution.tags.map((tag: string, idx: number) => (
                           <span
                             key={idx}
                             className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs"
