@@ -97,7 +97,7 @@ export default async function QueryHistoryPage() {
                     </div>
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        statusColors[query.status]
+                        statusColors[query.status as keyof typeof statusColors]
                       }`}
                     >
                       {query.status}
