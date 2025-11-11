@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth/auth-config";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import Link from "next/link";
+import { QueryHistoryClient } from "./QueryHistoryClient";
 
 export default async function QueryHistoryPage() {
   const session = await auth();
@@ -34,90 +35,96 @@ export default async function QueryHistoryPage() {
     take: 50,
   });
 
-  const statusColors: Record<string, string> = {
-    PENDING: "bg-yellow-100 text-yellow-800",
-    PROCESSING: "bg-blue-100 text-blue-800",
-    COMPLETED: "bg-green-100 text-green-800",
-    FAILED: "bg-red-100 text-red-800",
-  };
+  // Calculate stats
+  const totalQueries = queries.length;
+  const completedQueries = queries.filter((q: any) => q.status === "COMPLETED").length;
+  const totalResults = queries.reduce((acc: number, q: any) => acc + q.responses.length, 0);
+  const avgResultsPerQuery = totalQueries > 0 ? Math.round(totalResults / totalQueries) : 0;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, #f8f9fa 0%, #e9ecef 100%)' }}>
+      {/* Hero Header */}
+      <header className="bg-white border-b-2 border-purple-200 shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-8 lg:px-8">
+          <div className="flex items-center justify-between mb-8">
             <div>
               <Link
                 href="/researcher"
-                className="text-sm text-gray-500 hover:text-gray-700 mb-1 block"
+                className="text-sm text-purple-600 hover:text-purple-800 mb-2 block transition-colors inline-flex items-center gap-1 font-medium"
               >
-                ← Back to Dashboard
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Dashboard
               </Link>
-              <h1 className="text-2xl font-bold text-gray-900">Query History</h1>
+              <h1 className="text-4xl font-bold gradient-text mb-2">
+                Query History
+              </h1>
+              <p className="text-neutral-600 text-lg">
+                Track and explore your research queries
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <div className="text-sm font-medium text-gray-700">{session.user?.name}</div>
+                <div className="text-xs text-purple-600 font-medium">{session.user?.role}</div>
+              </div>
+              <form action="/api/auth/logout" method="POST">
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border-2 border-gray-300 rounded-xl hover:bg-gray-50 hover:border-purple-400 transition-all"
+                >
+                  Logout
+                </button>
+              </form>
+            </div>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-2xl shadow-xl p-6 border border-purple-100 hover-lift">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-neutral-600">Total Queries</span>
+                <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="text-3xl font-bold gradient-text">{totalQueries}</div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-xl p-6 border border-green-100 hover-lift">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-neutral-600">Completed</span>
+                <div className="w-10 h-10 rounded-xl" style={{background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)'}}>
+                  <div className="w-full h-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <div className="text-3xl font-bold text-green-600">{completedQueries}</div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-xl p-6 border border-blue-100 hover-lift">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-neutral-600">Avg. Results</span>
+                <div className="w-10 h-10 rounded-xl gradient-secondary flex items-center justify-center">
+                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+              </div>
+              <div className="text-3xl font-bold text-blue-600">{avgResultsPerQuery}</div>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Your Research Queries ({queries.length})
-            </h2>
-          </div>
-
-          {queries.length === 0 ? (
-            <div className="p-8 text-center">
-              <p className="text-gray-500 mb-4">No queries yet</p>
-              <Link
-                href="/researcher/query/new"
-                className="inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-              >
-                Create Your First Query
-              </Link>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-200">
-              {queries.map((query: any) => (
-                <Link
-                  key={query.id}
-                  href={`/researcher/query/${query.id}`}
-                  className="block p-6 hover:bg-gray-50 transition"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="text-gray-900 font-medium mb-2">
-                        {query.originalQuery}
-                      </p>
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        {query.sources.map((source: string) => (
-                          <span
-                            key={source}
-                            className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs"
-                          >
-                            {source}
-                          </span>
-                        ))}
-                      </div>
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
-                        <span>{new Date(query.startedAt).toLocaleString()}</span>
-                        <span>{query.responses.length} results</span>
-                      </div>
-                    </div>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        statusColors[query.status]
-                      }`}
-                    >
-                      {query.status}
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
+      <main className="max-w-7xl mx-auto py-8 px-6 lg:px-8">
+        <QueryHistoryClient queries={queries} session={session} />
       </main>
     </div>
   );

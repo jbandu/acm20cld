@@ -211,22 +211,91 @@ export function SuggestedQuestions({
 
   if (loading) {
     return (
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-gray-600 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 animate-pulse" />
-            Loading intelligent suggestions...
-          </h3>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-2xl shadow-xl p-8 border border-purple-200"
+      >
+        <div className="flex items-center gap-3 mb-6">
+          <motion.div
+            animate={{
+              rotate: [0, 360],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            className="p-3 rounded-xl gradient-primary"
+          >
+            <Sparkles className="w-6 h-6 text-white" />
+          </motion.div>
+          <div>
+            <h3 className="text-lg font-semibold text-neutral-900">
+              Generating Intelligent Suggestions
+            </h3>
+            <p className="text-sm text-neutral-600">
+              Analyzing your research patterns...
+            </p>
+          </div>
         </div>
-        <div className="grid gap-2">
-          {[1, 2, 3].map((i) => (
-            <div
+
+        <div className="grid gap-4">
+          {[0, 1, 2].map((i) => (
+            <motion.div
               key={i}
-              className="h-24 bg-gray-100 animate-pulse rounded-lg"
-            />
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.15 }}
+              className="bg-white rounded-xl border-2 border-purple-200 p-6"
+            >
+              <div className="flex items-start gap-4">
+                <motion.div
+                  animate={{
+                    opacity: [0.5, 1, 0.5],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: i * 0.3,
+                  }}
+                  className="w-12 h-12 rounded-xl bg-gradient-card flex items-center justify-center"
+                >
+                  <div className="w-6 h-6 rounded-full gradient-primary" />
+                </motion.div>
+                <div className="flex-1 space-y-3">
+                  <motion.div
+                    animate={{
+                      opacity: [0.5, 1, 0.5],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: i * 0.2,
+                    }}
+                    className="h-5 bg-gradient-to-r from-purple-200 to-blue-200 rounded-lg w-4/5"
+                  />
+                  <motion.div
+                    animate={{
+                      opacity: [0.5, 1, 0.5],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: i * 0.2 + 0.1,
+                    }}
+                    className="h-4 bg-gradient-to-r from-purple-100 to-blue-100 rounded w-full"
+                  />
+                </div>
+              </div>
+            </motion.div>
           ))}
         </div>
-      </div>
+      </motion.div>
     );
   }
 
@@ -239,28 +308,37 @@ export function SuggestedQuestions({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-3 mb-6"
+      className="bg-white rounded-2xl shadow-xl p-8 border border-purple-200 mb-8"
     >
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-amber-500" />
-          Questions you should explore
-        </h3>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center">
+            <Sparkles className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-neutral-900">
+              Intelligent Question Suggestions
+            </h3>
+            <p className="text-sm text-neutral-600">
+              AI-powered questions tailored to your research
+            </p>
+          </div>
+        </div>
         <button
           onClick={handleRefresh}
           disabled={refreshing}
-          className="flex items-center gap-1 px-2 py-1 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-all disabled:opacity-50 hover-lift"
         >
           <RefreshCw
-            className={`w-3 h-3 ${refreshing ? "animate-spin" : ""}`}
+            className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
           />
           {refreshing ? "Refreshing..." : "Refresh"}
         </button>
       </div>
 
       {/* Questions */}
-      <div className="grid gap-2">
+      <div className="grid gap-4">
         <AnimatePresence mode="popLayout">
           {visibleQuestions.map((question, index) => {
             const categoryKey = question.category as keyof typeof CATEGORY_CONFIG;
@@ -270,62 +348,92 @@ export function SuggestedQuestions({
             return (
               <motion.div
                 key={`${question.question}-${index}`}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95, height: 0 }}
-                transition={{ duration: 0.2, delay: index * 0.05 }}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20, height: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.08 }}
                 layout
               >
                 <div
                   onClick={() => handleQuestionClick(question, index)}
-                  className={`relative group cursor-pointer p-4 bg-white border-2 ${config.borderColor} rounded-lg hover:shadow-md transition-all duration-200 hover:scale-[1.01]`}
+                  className={`relative group cursor-pointer p-6 bg-gradient-to-br from-white to-gray-50 border-2 ${config.borderColor} rounded-2xl hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}
                 >
                   {/* Dismiss button */}
                   <button
                     onClick={(e) => handleDismiss(index, e)}
-                    className="absolute top-2 right-2 p-1 opacity-0 group-hover:opacity-100 hover:bg-gray-100 rounded-full transition-opacity"
+                    className="absolute top-4 right-4 p-2 opacity-0 group-hover:opacity-100 hover:bg-white rounded-full transition-all shadow-md z-10"
                     aria-label="Dismiss question"
                   >
-                    <X className="w-3 h-3 text-gray-500" />
+                    <X className="w-4 h-4 text-gray-500" />
                   </button>
 
-                  {/* Category badge */}
-                  <div className="flex items-center gap-2 mb-2">
-                    <div
-                      className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${config.bgColor} ${config.textColor}`}
-                    >
-                      <Icon className="w-3 h-3" />
-                      <span className="capitalize">{question.category.toLowerCase()}</span>
+                  {/* Header with icon and category */}
+                  <div className="flex items-start gap-4 mb-4">
+                    {/* Gradient icon badge */}
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${config.color} flex items-center justify-center flex-shrink-0 shadow-lg`}>
+                      <Icon className="w-7 h-7 text-white" />
                     </div>
 
-                    {/* Score indicator */}
-                    <div className="flex items-center gap-1 text-xs text-gray-500">
-                      <div className="w-12 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    {/* Category and score */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
                         <div
-                          className={`h-full bg-gradient-to-r ${config.color}`}
-                          style={{ width: `${question.overallScore * 100}%` }}
+                          className={`px-3 py-1.5 rounded-full text-xs font-bold ${config.bgColor} ${config.textColor} border ${config.borderColor}`}
+                        >
+                          {question.category.toUpperCase()}
+                        </div>
+                        <div className="text-sm font-semibold gradient-text">
+                          {Math.round(question.overallScore * 100)}% Match
+                        </div>
+                      </div>
+
+                      {/* Enhanced progress bar */}
+                      <div className="progress-bar h-2">
+                        <motion.div
+                          className="progress-fill"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${question.overallScore * 100}%` }}
+                          transition={{ duration: 0.8, delay: index * 0.1 + 0.2 }}
                         />
                       </div>
-                      <span>{Math.round(question.overallScore * 100)}%</span>
                     </div>
                   </div>
 
                   {/* Question */}
-                  <p className="text-sm font-medium text-gray-900 mb-2 pr-6 leading-relaxed">
+                  <p className="text-base font-semibold text-gray-900 mb-3 pr-8 leading-relaxed">
                     {question.question}
                   </p>
 
-                  {/* Reasoning */}
+                  {/* Reasoning with icon */}
                   {question.reasoning && (
-                    <p className="text-xs text-gray-600 flex items-start gap-1">
-                      <Lightbulb className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500" />
-                      <span>{question.reasoning}</span>
-                    </p>
+                    <div className={`flex items-start gap-3 p-3 rounded-xl ${config.bgColor} border ${config.borderColor}`}>
+                      <Lightbulb className="w-5 h-5 flex-shrink-0 text-amber-500" />
+                      <p className="text-sm text-gray-700 leading-relaxed">
+                        {question.reasoning}
+                      </p>
+                    </div>
                   )}
 
-                  {/* Source type badge (subtle) */}
-                  <div className="mt-2 text-[10px] text-gray-400">
-                    Source: {question.sourceType.replace(/-/g, " ")}
+                  {/* Footer with source and detailed scores */}
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500 font-medium">
+                        Source: {question.sourceType.replace(/_/g, " ")}
+                      </span>
+                      <div className="flex gap-2">
+                        {Object.entries(question.scores).slice(0, 3).map(([key, value]) => (
+                          <div
+                            key={key}
+                            className="flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-full"
+                          >
+                            <span className="text-[10px] text-gray-600 capitalize">{key}</span>
+                            <span className="text-[10px] font-bold text-purple-600">
+                              {Math.round((value as number) * 100)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </motion.div>
@@ -335,9 +443,14 @@ export function SuggestedQuestions({
       </div>
 
       {/* Footer hint */}
-      <p className="text-xs text-gray-500 text-center italic">
-        Click any question to start researching
-      </p>
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="text-sm text-center text-gray-600 mt-6 font-medium"
+      >
+        💡 Click any question to automatically fill the search box
+      </motion.p>
     </motion.div>
   );
 }
