@@ -16,6 +16,7 @@ export interface GraphInsight {
   reasoning: string;
   score: number;
   category: QuestionCategory;
+  sourceType: string;
   sourceIds: string[];
 }
 
@@ -165,6 +166,7 @@ export class GraphQuestionGenerator {
             reasoning: `You've researched ${viaConcepts[0]}, but not ${concept}. They're closely connected (${connections} links in the knowledge graph).`,
             score: Math.min(connections / 10, 1.0),
             category: "BRIDGING",
+            sourceType: "KNOWLEDGE_GRAPH",
             sourceIds: [],
           });
         }
@@ -227,6 +229,7 @@ export class GraphQuestionGenerator {
           reasoning: `${concept} connects ${bridgeCount} of your research topics, but you haven't explored it directly. This may be a critical bridge concept.`,
           score: Math.min(bridgeCount / 5, 1.0),
           category: "GAP",
+          sourceType: "KNOWLEDGE_GRAPH",
           sourceIds: [],
         });
       }
@@ -294,6 +297,7 @@ export class GraphQuestionGenerator {
             reasoning: `${recentPapers} papers on ${concept} published in last 3 months. Related to your work on ${userConcepts[0]}.`,
             score: Math.min(recentPapers / 20, 1.0),
             category: "TREND",
+            sourceType: "KNOWLEDGE_GRAPH",
             sourceIds: [],
           });
         }
@@ -361,6 +365,7 @@ export class GraphQuestionGenerator {
           reasoning: `${concept} is part of a cluster with ${clusterSize} related concepts you haven't explored yet. It's well-connected to your current interests.`,
           score: Math.min((connectionStrength * clusterSize) / 20, 1.0),
           category: "EXPLORATION",
+          sourceType: "KNOWLEDGE_GRAPH",
           sourceIds: [],
         });
       }

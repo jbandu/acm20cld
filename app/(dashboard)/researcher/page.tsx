@@ -21,57 +21,57 @@ export default async function ResearcherDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-neutral-50">
+      <header className="bg-white border-b border-neutral-200 sticky top-0 z-10">
+        <div className="container-dashboard py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Researcher Dashboard
-            </h1>
-            <p className="text-gray-600">Welcome, {session.user?.name}</p>
+            <div>
+              <h1 className="text-2xl font-bold text-neutral-900">
+                Researcher Dashboard
+              </h1>
+              <p className="text-sm text-neutral-600 mt-1">Welcome back, {session.user?.name}</p>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Link
-              href="/researcher/query/new"
-              className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition p-6"
-            >
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                New Research Query
-              </h3>
-              <p className="text-gray-500">
-                Search across multiple databases and get AI-powered insights
-              </p>
-            </Link>
+      <main className="container-dashboard py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Link
+            href="/researcher/query/new"
+            className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-normal group"
+          >
+            <h3 className="text-lg font-semibold text-neutral-900 mb-2 group-hover:text-primary-600 transition-colors">
+              New Research Query
+            </h3>
+            <p className="text-neutral-600">
+              Search across multiple databases and get AI-powered insights
+            </p>
+          </Link>
 
-            <Link
-              href="/researcher/history"
-              className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition p-6"
-            >
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Query History
-              </h3>
-              <p className="text-gray-500">
-                View your past searches and results
-              </p>
-            </Link>
+          <Link
+            href="/researcher/history"
+            className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-normal group"
+          >
+            <h3 className="text-lg font-semibold text-neutral-900 mb-2 group-hover:text-primary-600 transition-colors">
+              Query History
+            </h3>
+            <p className="text-neutral-600">
+              View your past searches and results
+            </p>
+          </Link>
 
-            <Link
-              href="/researcher/knowledge-graph"
-              className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition p-6"
-            >
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Knowledge Graph
-              </h3>
-              <p className="text-gray-500">
-                Explore connections between research concepts
-              </p>
-            </Link>
-          </div>
+          <Link
+            href="/researcher/knowledge-graph"
+            className="bg-white border border-neutral-200 rounded-lg p-6 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-normal group"
+          >
+            <h3 className="text-lg font-semibold text-neutral-900 mb-2 group-hover:text-primary-600 transition-colors">
+              Knowledge Graph
+            </h3>
+            <p className="text-neutral-600">
+              Explore connections between research concepts
+            </p>
+          </Link>
         </div>
       </main>
     </div>

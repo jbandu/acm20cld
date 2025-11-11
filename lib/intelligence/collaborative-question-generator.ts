@@ -314,7 +314,7 @@ export class CollaborativeQuestionGenerator {
               reasoning: `${similar.name} (${Math.round(similar.similarity * 100)}% similar to you) found this question valuable${similar.sharedInterests.length > 0 ? `. You share interest in: ${similar.sharedInterests.slice(0, 2).join(", ")}` : ""}.`,
               score: similar.similarity * 0.8, // Weighted by researcher similarity
               category,
-              sourceType: "collaborative",
+              sourceType: "COLLABORATIVE",
               sourceQueryIds: [query.id],
               similarResearchers: [similar.name],
             });
@@ -480,7 +480,7 @@ export class CollaborativeQuestionGenerator {
             reasoning: `${data.count} researchers asked about this in the last 7 days. Trending topic in ${department || "the platform"}.`,
             score: Math.min(data.count / 5, 1.0),
             category: this.inferCategory(example.originalQuery),
-            sourceType: "trending",
+            sourceType: "HYBRID",
             sourceQueryIds: data.examples.map((e) => e.id),
             similarResearchers: data.examples.map((e) => e.user.name),
           };
