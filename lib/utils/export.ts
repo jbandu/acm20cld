@@ -15,8 +15,8 @@ interface QueryData {
 interface ResponseData {
   id: string;
   source: string;
-  llm: string;
-  content: string;
+  summary: string;
+  fullContent: string;
   relevanceScore?: number | null;
   citationCount?: number | null;
   createdAt: Date;
@@ -92,7 +92,16 @@ export async function exportToPDF(query: QueryData) {
 
   query.responses.forEach((response, index) => {
     // Response header
-    addText(`${index + 1}. ${response.source} - ${response.llm}`, 12, true);
+    const sourceNames: Record<string, string> = {
+      openalex: "OpenAlex",
+      pubmed: "PubMed",
+      patents: "Patents",
+      claude: "Claude Analysis",
+      gpt4: "GPT-4 Analysis",
+    };
+    const sourceName = sourceNames[response.source] || response.source;
+    addText(`${index + 1}. ${sourceName}`, 12, true);
+    addText(`${new Date(response.createdAt).toLocaleString()}`, 10);
 
     if (response.relevanceScore !== null && response.relevanceScore !== undefined) {
       addText(`Relevance Score: ${(response.relevanceScore * 100).toFixed(0)}%`, 10);
@@ -102,8 +111,8 @@ export async function exportToPDF(query: QueryData) {
       addText(`Citations: ${response.citationCount}`, 10);
     }
 
-    // Content
-    addText(response.content, 10);
+    // Summary
+    addText(response.summary, 10);
     yPosition += 10;
   });
 
@@ -124,8 +133,7 @@ export function exportToCSV(query: QueryData) {
   rows.push([
     "Response ID",
     "Source",
-    "LLM",
-    "Content",
+    "Summary",
     "Relevance Score",
     "Citation Count",
     "Created At",
@@ -136,8 +144,7 @@ export function exportToCSV(query: QueryData) {
     rows.push([
       response.id,
       response.source,
-      response.llm,
-      `"${response.content.replace(/"/g, '""')}"`, // Escape quotes
+      `"${response.summary.replace(/"/g, '""')}"`, // Escape quotes
       response.relevanceScore?.toString() || "",
       response.citationCount?.toString() || "",
       new Date(response.createdAt).toISOString(),
@@ -167,18 +174,29 @@ export function exportToCSV(query: QueryData) {
  * Export individual response to text file
  */
 export function exportResponseToText(response: ResponseData) {
+  const sourceNames: Record<string, string> = {
+    openalex: "OpenAlex",
+    pubmed: "PubMed",
+    patents: "Patents",
+    claude: "Claude Analysis",
+    gpt4: "GPT-4 Analysis",
+  };
+  const sourceName = sourceNames[response.source] || response.source;
+
   const content = `
 ACM Research Platform - Response Export
 Generated: ${new Date().toLocaleString()}
 
-Source: ${response.source}
-LLM: ${response.llm}
+Source: ${sourceName}
 Relevance Score: ${response.relevanceScore ? (response.relevanceScore * 100).toFixed(0) + "%" : "N/A"}
 Citation Count: ${response.citationCount || "N/A"}
 Created: ${new Date(response.createdAt).toLocaleString()}
 
-Content:
-${response.content}
+Summary:
+${response.summary}
+
+Full Content:
+${response.fullContent}
 `.trim();
 
   const blob = new Blob([content], { type: "text/plain;charset=utf-8;" });
