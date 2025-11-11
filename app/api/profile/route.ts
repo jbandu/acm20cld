@@ -18,27 +18,16 @@ export async function GET(req: NextRequest) {
       include: {
         researchProfile: true,
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        title: true,
-        department: true,
-        institution: true,
-        location: true,
-        bio: true,
-        emailNotifications: true,
-        notifyOnQueryComplete: true,
-        notifyWeeklyDigest: true,
-        researchProfile: true,
-      },
     });
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(user);
+    // Remove sensitive fields before returning
+    const { password, mfaSecret, ...safeUser } = user;
+
+    return NextResponse.json(safeUser);
   } catch (error: any) {
     console.error("Error fetching profile:", error);
     return NextResponse.json(
