@@ -12,15 +12,15 @@ export async function POST(req: NextRequest) {
     cookieStore.delete("authjs.callback-url");
     cookieStore.delete("authjs.csrf-token");
 
-    // Create redirect response to login with 303 status (converts POST to GET)
-    const loginUrl = new URL("/login", req.url);
-    return NextResponse.redirect(loginUrl, 303);
+    // Create redirect response to home page with 303 status (converts POST to GET)
+    const homeUrl = new URL("/", req.url);
+    return NextResponse.redirect(homeUrl, 303);
   } catch (error) {
     console.error("Logout error:", error);
 
     // Still try to redirect even if there's an error
-    const loginUrl = new URL("/login", req.url);
-    const response = NextResponse.redirect(loginUrl, 303);
+    const homeUrl = new URL("/", req.url);
+    const response = NextResponse.redirect(homeUrl, 303);
 
     // Try to clear cookies in response as fallback
     response.cookies.delete("authjs.session-token");
