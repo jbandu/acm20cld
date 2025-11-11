@@ -8,7 +8,7 @@ import Link from "next/link";
 export default async function QueryResultsPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const session = await auth();
 
@@ -16,8 +16,10 @@ export default async function QueryResultsPage({
     redirect("/login");
   }
 
+  const { id } = await params;
+
   const query = await prisma.query.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       responses: {
         orderBy: { createdAt: "desc" },
