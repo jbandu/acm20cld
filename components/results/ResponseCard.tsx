@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { FeedbackButtons } from "./FeedbackButtons";
+import { CopyButton } from "@/components/ui/CopyButton";
 
 interface Response {
   id: string;
@@ -101,7 +102,10 @@ export function ResponseCard({
 
         {/* Summary */}
         <div className="mb-4">
-          <p className="text-gray-700 whitespace-pre-wrap">{response.summary}</p>
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-gray-700 whitespace-pre-wrap flex-1">{response.summary}</p>
+            <CopyButton text={response.summary} size="sm" className="flex-shrink-0 mt-1" />
+          </div>
         </div>
 
         {/* Expand/Collapse */}
@@ -124,9 +128,16 @@ export function ResponseCard({
                       className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-purple-300 transition-colors"
                     >
                       {/* Paper Title */}
-                      <h4 className="text-base font-semibold text-gray-900 mb-2">
-                        {paper.title}
-                      </h4>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <h4 className="text-base font-semibold text-gray-900 flex-1">
+                          {paper.title}
+                        </h4>
+                        <CopyButton
+                          text={`${paper.title}\n\nAuthors: ${paper.authors?.join(", ") || "N/A"}\n\n${paper.abstract || ""}`}
+                          size="sm"
+                          className="flex-shrink-0"
+                        />
+                      </div>
 
                       {/* Authors */}
                       {paper.authors && paper.authors.length > 0 && (
@@ -204,8 +215,11 @@ export function ResponseCard({
                   ))
                 ) : (
                   // Fallback to raw text display
-                  <div className="p-4 bg-gray-50 rounded-lg">
-                    <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">
+                  <div className="p-4 bg-gray-50 rounded-lg relative">
+                    <div className="absolute top-2 right-2">
+                      <CopyButton text={response.fullContent} size="sm" />
+                    </div>
+                    <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans pr-10">
                       {response.fullContent}
                     </pre>
                   </div>

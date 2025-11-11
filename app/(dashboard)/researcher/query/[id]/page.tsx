@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import { ResponseCard } from "@/components/results/ResponseCard";
 import { ExportButton } from "@/components/results/ExportButton";
+import { QueryInfo } from "@/components/results/QueryInfo";
 import Link from "next/link";
 
 export default async function QueryResultsPage({
@@ -71,54 +72,14 @@ export default async function QueryResultsPage({
 
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Query Information */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Your Query</h2>
-          <div className="space-y-3">
-            <div>
-              <span className="text-sm font-medium text-gray-500">Original Query:</span>
-              <p className="text-gray-900 mt-1">{query.originalQuery}</p>
-            </div>
-            {query.refinedQuery && (
-              <div>
-                <span className="text-sm font-medium text-gray-500">Refined Query:</span>
-                <p className="text-gray-900 mt-1">{query.refinedQuery}</p>
-              </div>
-            )}
-            <div className="flex gap-4 text-sm">
-              <div>
-                <span className="font-medium text-gray-500">Sources:</span>
-                <div className="flex gap-2 mt-1">
-                  {query.sources.map((source) => (
-                    <span
-                      key={source}
-                      className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs"
-                    >
-                      {source}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <span className="font-medium text-gray-500">LLMs:</span>
-                <div className="flex gap-2 mt-1">
-                  {query.llms.map((llm) => (
-                    <span
-                      key={llm}
-                      className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs"
-                    >
-                      {llm}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="text-xs text-gray-500">
-              Submitted: {new Date(query.startedAt).toLocaleString()}
-              {query.completedAt &&
-                ` • Completed: ${new Date(query.completedAt).toLocaleString()}`}
-            </div>
-          </div>
-        </div>
+        <QueryInfo
+          originalQuery={query.originalQuery}
+          refinedQuery={query.refinedQuery}
+          sources={query.sources}
+          llms={query.llms}
+          startedAt={query.startedAt}
+          completedAt={query.completedAt}
+        />
 
         {/* Status Messages */}
         {query.status === "PROCESSING" && (
