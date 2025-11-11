@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { calculateProfileCompleteness } from "@/lib/utils/profile-completeness";
 
 interface User {
   id: string;
@@ -80,6 +81,29 @@ export default function ProfileEditForm({ user }: { user: User }) {
     user.notifyWeeklyDigest
   );
 
+  // Calculate profile completeness
+  const profileCompleteness = useMemo(() => {
+    return calculateProfileCompleteness({
+      name,
+      title,
+      department,
+      institution,
+      location,
+      bio,
+      researchProfile: {
+        highestDegree,
+        yearsInField: yearsInField ? parseInt(yearsInField) : null,
+        orcidId,
+        googleScholarId,
+        phdFocus,
+        primaryInterests: primaryInterests ? primaryInterests.split(",").map(s => s.trim()).filter(Boolean) : [],
+        secondaryInterests: secondaryInterests ? secondaryInterests.split(",").map(s => s.trim()).filter(Boolean) : [],
+        techniques: techniques ? techniques.split(",").map(s => s.trim()).filter(Boolean) : [],
+        computationalSkills: computationalSkills ? computationalSkills.split(",").map(s => s.trim()).filter(Boolean) : [],
+      },
+    });
+  }, [name, title, department, institution, location, bio, highestDegree, yearsInField, orcidId, googleScholarId, phdFocus, primaryInterests, secondaryInterests, techniques, computationalSkills]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -147,6 +171,39 @@ export default function ProfileEditForm({ user }: { user: User }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Progress Bar */}
+      <div className="bg-white rounded-lg shadow-card border border-purple-200 p-6">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-semibold text-gray-900">Profile Completeness</h3>
+          <span className="text-lg font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
+            {profileCompleteness}%
+          </span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-violet-600 to-purple-600 rounded-full transition-all duration-500"
+            style={{ width: `${profileCompleteness}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Optional Banner */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6">
+        <div className="flex items-start gap-3">
+          <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <p className="text-gray-900 font-medium mb-1">Everything here is optional</p>
+            <p className="text-gray-700 text-sm">
+              The more you share, the better ACM 2.0 understands your research and provides personalized suggestions.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-800">{error}</p>
@@ -163,19 +220,24 @@ export default function ProfileEditForm({ user }: { user: User }) {
 
       {/* Basic Information */}
       <div className="bg-white rounded-lg shadow-card border border-neutral-200 p-6">
-        <h2 className="text-xl font-semibold text-neutral-900 mb-4">
-          Basic Information
-        </h2>
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold text-neutral-900 mb-2">
+            Basic Information
+          </h2>
+          <p className="text-sm text-gray-600">
+            Why add this? Helps colleagues find and recognize you on the platform.
+          </p>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Name *
+              Name
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              required
+              placeholder="Your full name"
               className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
@@ -258,9 +320,14 @@ export default function ProfileEditForm({ user }: { user: User }) {
 
       {/* Research Profile */}
       <div className="bg-white rounded-lg shadow-card border border-neutral-200 p-6">
-        <h2 className="text-xl font-semibold text-neutral-900 mb-4">
-          Research Profile
-        </h2>
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold text-neutral-900 mb-2">
+            Research Profile
+          </h2>
+          <p className="text-sm text-gray-600">
+            Why add this? Get better question suggestions and more relevant search results tailored to your expertise.
+          </p>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
@@ -385,9 +452,14 @@ export default function ProfileEditForm({ user }: { user: User }) {
 
       {/* Notification Preferences */}
       <div className="bg-white rounded-lg shadow-card border border-neutral-200 p-6">
-        <h2 className="text-xl font-semibold text-neutral-900 mb-4">
-          Notification Preferences
-        </h2>
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold text-neutral-900 mb-2">
+            Notification Preferences
+          </h2>
+          <p className="text-sm text-gray-600">
+            Why add this? Stay updated on query completions and weekly research digests.
+          </p>
+        </div>
         <div className="space-y-3">
           <div className="flex items-center">
             <input
