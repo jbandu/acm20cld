@@ -20,6 +20,14 @@ export default async function ResearcherDashboard() {
     redirect("/onboarding");
   }
 
+  // Fetch user role to show CEO dashboard card if applicable
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+
+  const isCEO = user?.role === "ADMIN";
+
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, #f8f9fa 0%, #e9ecef 100%)' }}>
       <header className="bg-white border-b-2 border-purple-200 shadow-lg backdrop-blur-sm">
@@ -139,6 +147,39 @@ export default async function ResearcherDashboard() {
                 </div>
               </div>
             </Link>
+
+            {isCEO && (
+              <Link
+                href="/ceo"
+                className="group relative bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border-2 border-orange-200"
+              >
+                <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl opacity-20 group-hover:opacity-30 transition-opacity" style={{background: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)'}}></div>
+                <div className="relative p-8">
+                  <div className="w-16 h-16 rounded-2xl mb-6 flex items-center justify-center shadow-lg" style={{background: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)'}}>
+                    <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <h3 className="text-xl font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
+                      CEO Dashboard
+                    </h3>
+                    <span className="px-2 py-1 text-xs font-bold text-orange-700 bg-orange-100 rounded-full">
+                      ADMIN
+                    </span>
+                  </div>
+                  <p className="text-gray-600 leading-relaxed">
+                    View team research efficacy and platform analytics
+                  </p>
+                  <div className="mt-6 flex items-center text-orange-600 font-semibold">
+                    View Analytics
+                    <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </Link>
+            )}
           </div>
         </div>
       </main>
