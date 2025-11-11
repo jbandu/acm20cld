@@ -24,7 +24,7 @@ export default async function QueryHistoryPage() {
     take: 50,
   });
 
-  const statusColors = {
+  const statusColors: Record<string, string> = {
     PENDING: "bg-yellow-100 text-yellow-800",
     PROCESSING: "bg-blue-100 text-blue-800",
     COMPLETED: "bg-green-100 text-green-800",

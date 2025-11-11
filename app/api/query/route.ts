@@ -5,7 +5,17 @@ import { checkRateLimit } from "@/lib/db/redis";
 
 export async function POST(req: NextRequest) {
   try {
+    // Check for authentication
     const session = await requireAuth();
+
+    // Ensure session.user and session.user.id exist
+    if (!session?.user?.id) {
+      console.error("Session exists but user.id is missing:", session);
+      return NextResponse.json(
+        { error: "Invalid session. Please log in again." },
+        { status: 401 }
+      );
+    }
 
     // Rate limiting: 20 queries per hour (skip if Redis not available)
     let rateLimit = { allowed: true, remaining: 20 };
@@ -97,6 +107,15 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const session = await requireAuth();
+
+    // Ensure session.user and session.user.id exist
+    if (!session?.user?.id) {
+      console.error("Session exists but user.id is missing:", session);
+      return NextResponse.json(
+        { error: "Invalid session. Please log in again." },
+        { status: 401 }
+      );
+    }
 
     const { searchParams } = new URL(req.url);
     const queryId = searchParams.get("queryId");
