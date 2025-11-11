@@ -15,6 +15,10 @@ import {
   BarChart3,
   ArrowUpRight,
   ArrowDownRight,
+  Network,
+  History,
+  Sparkles,
+  BookOpen,
 } from "lucide-react";
 
 interface UserMetrics {
@@ -165,6 +169,48 @@ export default function CEODashboardClient({ user }: { user: User | null }) {
           </div>
         </div>
       </header>
+
+      {/* Quick Links to Research Tools */}
+      <div className="bg-gradient-to-r from-purple-500 to-blue-500 border-b-2 border-purple-600">
+        <div className="max-w-7xl mx-auto px-6 py-4 lg:px-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-5 h-5 text-white" />
+              <span className="text-white font-semibold">Research Tools</span>
+            </div>
+            <div className="flex gap-3">
+              <Link
+                href="/researcher/query/new"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white text-purple-700 rounded-lg font-medium hover:bg-purple-50 transition-all shadow-md hover:shadow-lg"
+              >
+                <Sparkles className="w-4 h-4" />
+                New Query
+              </Link>
+              <Link
+                href="/researcher/history"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 text-white rounded-lg font-medium hover:bg-white/20 transition-all backdrop-blur-sm"
+              >
+                <History className="w-4 h-4" />
+                Query History
+              </Link>
+              <Link
+                href="/researcher/knowledge-graph"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 text-white rounded-lg font-medium hover:bg-white/20 transition-all backdrop-blur-sm"
+              >
+                <Network className="w-4 h-4" />
+                Knowledge Graph
+              </Link>
+              <Link
+                href="/researcher"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 text-white rounded-lg font-medium hover:bg-white/20 transition-all backdrop-blur-sm"
+              >
+                <Activity className="w-4 h-4" />
+                Research Dashboard
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <main className="max-w-7xl mx-auto py-8 px-6 lg:px-8">
         {loading && (

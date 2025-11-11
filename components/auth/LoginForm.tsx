@@ -34,7 +34,18 @@ export function LoginForm() {
           setError(result.error);
         }
       } else {
-        router.push("/researcher");
+        // Fetch session to get user role
+        const sessionRes = await fetch("/api/auth/session");
+        const session = await sessionRes.json();
+
+        // Redirect based on role
+        if (session?.user?.role === "ADMIN") {
+          router.push("/ceo");
+        } else if (session?.user?.role === "MANAGER") {
+          router.push("/manager");
+        } else {
+          router.push("/researcher");
+        }
         router.refresh();
       }
     } catch (err) {

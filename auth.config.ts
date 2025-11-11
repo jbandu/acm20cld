@@ -37,6 +37,11 @@ export const authConfig = {
         if (pathname.startsWith("/admin") && role !== "ADMIN") {
           return Response.redirect(new URL("/researcher", nextUrl));
         }
+
+        // CEO routes (Admin only)
+        if (pathname.startsWith("/ceo") && role !== "ADMIN") {
+          return Response.redirect(new URL("/researcher", nextUrl));
+        }
       }
 
       return true;

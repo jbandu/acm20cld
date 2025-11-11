@@ -25,6 +25,11 @@ export default function LoginPage() {
               <p className="text-gray-600">Email: <span className="font-mono">admin@acm.com</span></p>
               <p className="text-gray-600">Password: <span className="font-mono">password123</span></p>
             </div>
+            <div className="bg-white p-2 rounded border border-purple-100">
+              <p className="font-medium text-purple-800">CEO</p>
+              <p className="text-gray-600">Email: <span className="font-mono">ceo@acm.com</span></p>
+              <p className="text-gray-600">Password: <span className="font-mono">ceo123</span></p>
+            </div>
           </div>
         </div>
 
