@@ -28,7 +28,15 @@ export default async function ResearcherDashboard() {
             <h1 className="text-3xl font-bold text-gray-900">
               Researcher Dashboard
             </h1>
-            <p className="text-gray-600">Welcome, {session.user?.name}</p>
+            <p className="text-gray-600">
+              Welcome,{" "}
+              <Link
+                href="/researcher/profile"
+                className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+              >
+                {session.user?.name}
+              </Link>
+            </p>
           </div>
         </div>
       </header>
