@@ -22,6 +22,10 @@ export interface ClaudeResponse {
 export async function queryClaude(
   request: ClaudeRequest
 ): Promise<ClaudeResponse> {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    throw new Error("ANTHROPIC_API_KEY not configured");
+  }
+
   try {
     const message = await anthropic.messages.create({
       model: "claude-sonnet-4-20250514",
@@ -46,9 +50,10 @@ export async function queryClaude(
         outputTokens: message.usage.output_tokens,
       },
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Claude API error:", error);
-    throw error;
+    console.error("Error details:", error.message);
+    throw new Error(`Claude API failed: ${error.message}`);
   }
 }
 

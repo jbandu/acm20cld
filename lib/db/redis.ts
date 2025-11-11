@@ -6,21 +6,31 @@ export function getRedisClient(): Redis {
   if (!redis) {
     const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
 
-    redis = new Redis(redisUrl, {
-      maxRetriesPerRequest: 3,
-      retryStrategy: (times) => {
-        const delay = Math.min(times * 50, 2000);
-        return delay;
-      },
-    });
+    try {
+      redis = new Redis(redisUrl, {
+        maxRetriesPerRequest: 3,
+        retryStrategy: (times) => {
+          if (times > 3) {
+            console.warn("Redis connection failed after 3 retries");
+            return null; // Stop retrying
+          }
+          const delay = Math.min(times * 50, 2000);
+          return delay;
+        },
+        lazyConnect: true, // Don't connect immediately
+      });
 
-    redis.on("error", (error) => {
-      console.error("Redis connection error:", error);
-    });
+      redis.on("error", (error) => {
+        console.warn("Redis connection error (non-critical):", error.message);
+      });
 
-    redis.on("connect", () => {
-      console.log("✅ Redis connected");
-    });
+      redis.on("connect", () => {
+        console.log("✅ Redis connected");
+      });
+    } catch (error) {
+      console.warn("Redis initialization failed:", error);
+      throw error;
+    }
   }
 
   return redis;
@@ -75,21 +85,36 @@ export async function checkRateLimit(
   maxRequests: number = 100,
   windowSeconds: number = 60
 ): Promise<{ allowed: boolean; remaining: number }> {
-  const client = getRedisClient();
-  const key = `rate_limit:${identifier}`;
+  try {
+    const client = getRedisClient();
 
-  const current = await client.incr(key);
+    // Try to connect if not connected
+    if (client.status !== "ready") {
+      await client.connect();
+    }
 
-  if (current === 1) {
-    await client.expire(key, windowSeconds);
+    const key = `rate_limit:${identifier}`;
+
+    const current = await client.incr(key);
+
+    if (current === 1) {
+      await client.expire(key, windowSeconds);
+    }
+
+    const ttl = await client.ttl(key);
+
+    return {
+      allowed: current <= maxRequests,
+      remaining: Math.max(0, maxRequests - current),
+    };
+  } catch (error) {
+    console.warn("Rate limiting unavailable, allowing request:", error);
+    // If Redis is unavailable, allow the request
+    return {
+      allowed: true,
+      remaining: maxRequests,
+    };
   }
-
-  const ttl = await client.ttl(key);
-
-  return {
-    allowed: current <= maxRequests,
-    remaining: Math.max(0, maxRequests - current),
-  };
 }
 
 // Session management

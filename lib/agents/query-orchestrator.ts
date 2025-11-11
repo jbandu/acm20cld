@@ -33,40 +33,60 @@ export class QueryOrchestrator {
       },
     });
 
-    try {
-      // 2. Refine query with LLM
-      const refined = await refineQuery(config.query);
+    console.log("Query record created:", query.id);
 
-      await prisma.query.update({
-        where: { id: query.id },
-        data: {
-          refinedQuery: refined.refinedQuery,
-          intent: refined as any,
-        },
-      });
+    try {
+      // 2. Refine query with LLM (skip if API key not available)
+      let refined;
+      try {
+        console.log("Refining query with LLM...");
+        refined = await refineQuery(config.query);
+        console.log("Query refined successfully");
+
+        await prisma.query.update({
+          where: { id: query.id },
+          data: {
+            refinedQuery: refined.refinedQuery,
+            intent: refined as any,
+          },
+        });
+      } catch (llmError: any) {
+        console.warn("Query refinement failed, using original query:", llmError.message);
+        refined = {
+          refinedQuery: config.query,
+          intent: { primary: config.query, secondary: [] },
+          concepts: [],
+          suggestedTerms: [],
+        };
+      }
 
       // 3. Execute parallel searches across all sources
       const searchPromises = [];
 
       if (config.sources.includes("openalex")) {
+        console.log("Adding OpenAlex search...");
         searchPromises.push(
           this.searchOpenAlex(refined.refinedQuery, config.maxResults)
         );
       }
 
       if (config.sources.includes("pubmed")) {
+        console.log("Adding PubMed search...");
         searchPromises.push(
           this.searchPubMed(refined.refinedQuery, config.maxResults)
         );
       }
 
       if (config.sources.includes("patents")) {
+        console.log("Adding Patents search...");
         searchPromises.push(
           this.searchPatents(refined.refinedQuery, config.maxResults)
         );
       }
 
+      console.log(`Executing ${searchPromises.length} parallel searches...`);
       const results = await Promise.allSettled(searchPromises);
+      console.log("Search results:", results.map(r => r.status));
 
       // 4. Collect successful results
       const successfulResults = results

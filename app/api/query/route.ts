@@ -7,12 +7,13 @@ export async function POST(req: NextRequest) {
   try {
     const session = await requireAuth();
 
-    // Rate limiting: 20 queries per hour
-    const rateLimit = await checkRateLimit(
-      `query:${session.user.id}`,
-      20,
-      3600
-    );
+    // Rate limiting: 20 queries per hour (skip if Redis not available)
+    let rateLimit = { allowed: true, remaining: 20 };
+    try {
+      rateLimit = await checkRateLimit(`query:${session.user.id}`, 20, 3600);
+    } catch (redisError) {
+      console.warn("Redis rate limiting unavailable, skipping:", redisError);
+    }
 
     if (!rateLimit.allowed) {
       return NextResponse.json(
@@ -55,11 +56,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    console.log("Processing query:", {
+      userId: session.user.id,
+      queryLength: config.query.length,
+      sources: config.sources,
+      llms: config.llms,
+    });
+
     // Execute query
     const queryId = await queryOrchestrator.executeQuery(
       config,
       session.user.id
     );
+
+    console.log("Query executed successfully:", queryId);
 
     return NextResponse.json({
       queryId,
@@ -68,13 +78,17 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     console.error("Query API error:", error);
+    console.error("Error stack:", error.stack);
 
     if (error.message === "Unauthorized") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     return NextResponse.json(
-      { error: "An error occurred while processing your query" },
+      {
+        error: "An error occurred while processing your query",
+        details: process.env.NODE_ENV === "development" ? error.message : undefined,
+      },
       { status: 500 }
     );
   }
