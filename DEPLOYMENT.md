@@ -70,9 +70,11 @@ vercel --prod
 2. Import your GitHub repository: `jbandu/acm20cld`
 3. Configure project:
    - **Framework Preset**: Next.js
-   - **Build Command**: `npm run build`
+   - **Build Command**: Automatically uses `vercel-build` (includes database schema sync)
    - **Output Directory**: `.next`
    - **Install Command**: `npm install`
+
+**Note**: The `vercel-build` script automatically runs `prisma db push` before building to ensure your database schema is in sync with the code.
 
 ### 3. Add Environment Variables in Vercel
 
@@ -93,19 +95,20 @@ Add these variables (Production + Preview + Development):
 - `NEO4J_USERNAME` - Neo4j username
 - `NEO4J_PASSWORD` - Neo4j password
 
-### 4. Run Database Migration
+### 4. Database Schema Sync (Automatic)
 
-After first deployment, run:
+The database schema is automatically synced during each Vercel build via the `vercel-build` script:
 
-```bash
-# Using Vercel CLI
-vercel env pull .env.production
-npm run db:push
-
-# Or manually run in Vercel
-# Go to: Settings → Functions → Node.js Version
-# Then trigger a build
+```json
+"vercel-build": "prisma db push --accept-data-loss && next build"
 ```
+
+This means:
+- ✅ Schema changes are applied automatically on every deployment
+- ✅ No manual migration steps needed
+- ✅ Database stays in sync with code
+
+**Important**: The `--accept-data-loss` flag is used to allow schema changes. Always backup your database before deploying breaking schema changes.
 
 ### 5. Seed Test Users (Optional)
 
@@ -190,6 +193,12 @@ npm run lint
 - Verify `DATABASE_URL` is correct
 - Check Neon database is not paused
 - Ensure IP allowlist includes Vercel IPs (if enabled)
+
+### "Column does not exist" Errors
+If you see errors like `The column User.emailNotifications does not exist`:
+- This means the database schema is out of sync
+- **Solution**: Trigger a new deployment (Vercel will run `vercel-build` which syncs the schema)
+- Or manually run: `npx prisma db push --accept-data-loss` with your production DATABASE_URL
 
 ### API Key Issues
 - Verify all API keys are added to Vercel
