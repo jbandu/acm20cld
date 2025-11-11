@@ -15,7 +15,13 @@ interface GraphData {
   message?: string;
 }
 
-function KnowledgeGraphContent() {
+interface User {
+  name: string;
+  email: string;
+  role: string;
+}
+
+function KnowledgeGraphContent({ user }: { user: User | null }) {
   const searchParams = useSearchParams();
   const queryId = searchParams.get("queryId");
 
@@ -64,6 +70,22 @@ function KnowledgeGraphContent() {
               </svg>
               Back to Dashboard
             </Link>
+            <div className="flex items-center gap-4">
+              {user && (
+                <div className="text-right">
+                  <div className="text-sm font-medium text-gray-700">{user.name}</div>
+                  <div className="text-xs text-purple-600 font-medium">{user.role}</div>
+                </div>
+              )}
+              <form action="/api/auth/logout" method="POST">
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border-2 border-gray-300 rounded-xl hover:bg-gray-50 hover:border-purple-400 transition-all"
+                >
+                  Logout
+                </button>
+              </form>
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
@@ -226,7 +248,7 @@ function KnowledgeGraphContent() {
   );
 }
 
-export default function KnowledgeGraphClient() {
+export default function KnowledgeGraphClient({ user }: { user: User | null }) {
   return (
     <Suspense fallback={
       <div className="p-6">
@@ -238,7 +260,7 @@ export default function KnowledgeGraphClient() {
         </div>
       </div>
     }>
-      <KnowledgeGraphContent />
+      <KnowledgeGraphContent user={user} />
     </Suspense>
   );
 }

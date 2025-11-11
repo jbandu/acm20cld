@@ -20,5 +20,11 @@ export default async function KnowledgeGraphPage() {
     redirect("/onboarding");
   }
 
-  return <KnowledgeGraphClient />;
+  // Fetch fresh user data from database
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { name: true, email: true, role: true },
+  });
+
+  return <KnowledgeGraphClient user={user} />;
 }

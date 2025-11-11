@@ -1,17 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { signOut } from "@/lib/auth/auth-config";
 
 export async function POST(req: NextRequest) {
   try {
-    // Delete the session cookie
-    const cookieStore = await cookies();
-    cookieStore.delete("session");
+    // Use NextAuth signOut function
+    await signOut({ redirect: false });
 
-    // Redirect to login page
-    return NextResponse.redirect(new URL("/login", req.url));
+    // Create redirect response
+    const response = NextResponse.redirect(new URL("/login", req.url));
+
+    // Clear all auth-related cookies
+    response.cookies.delete("authjs.session-token");
+    response.cookies.delete("__Secure-authjs.session-token");
+    response.cookies.delete("session");
+
+    return response;
   } catch (error) {
     console.error("Logout error:", error);
-    return NextResponse.redirect(new URL("/login", req.url));
+    // Still redirect even if there's an error
+    const response = NextResponse.redirect(new URL("/login", req.url));
+    response.cookies.delete("authjs.session-token");
+    response.cookies.delete("__Secure-authjs.session-token");
+    response.cookies.delete("session");
+    return response;
   }
 }
 
