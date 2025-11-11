@@ -29,6 +29,13 @@ async function main() {
       role: "ADMIN" as const,
       department: "IT Administration",
     },
+    {
+      email: "ceo@acm.com",
+      password: "ceo123",
+      name: "CEO",
+      role: "ADMIN" as const,
+      department: "Executive Leadership",
+    },
   ];
 
   for (const userData of testUsers) {
@@ -38,6 +45,24 @@ async function main() {
 
     if (existingUser) {
       console.log(`✓ User ${userData.email} already exists`);
+
+      // Check if research profile exists, create if not
+      const existingProfile = await prisma.userResearchProfile.findUnique({
+        where: { userId: existingUser.id },
+      });
+
+      if (!existingProfile) {
+        await prisma.userResearchProfile.create({
+          data: {
+            userId: existingUser.id,
+            onboardingComplete: true,
+            researchAreas: ["General Research"],
+            primaryInterests: ["Research"],
+          },
+        });
+        console.log(`✓ Created research profile for ${userData.email}`);
+      }
+
       continue;
     }
 
@@ -50,6 +75,16 @@ async function main() {
         name: userData.name,
         role: userData.role,
         department: userData.department,
+      },
+    });
+
+    // Create research profile with onboarding complete
+    await prisma.userResearchProfile.create({
+      data: {
+        userId: user.id,
+        onboardingComplete: true,
+        researchAreas: ["General Research"],
+        primaryInterests: ["Research"],
       },
     });
 
