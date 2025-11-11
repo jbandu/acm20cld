@@ -28,9 +28,11 @@ REDIS_URL="redis://localhost:6379"
 # For production Redis, use Upstash or Redis Cloud:
 # REDIS_URL="rediss://default:password@host:port"
 
-# Neo4j (Optional - for knowledge graph)
-NEO4J_URI="bolt://localhost:7687"
-NEO4J_USERNAME="neo4j"
+# Neo4j (Optional - for knowledge graph visualization)
+# Platform works without this! See docs/NEO4J_SETUP.md for cloud setup
+# For Neo4j Aura (recommended): neo4j+s://xxxxx.databases.neo4j.io
+NEO4J_URI=""
+NEO4J_USERNAME=""
 NEO4J_PASSWORD=""
 
 # External APIs (Optional - most work without keys)
@@ -209,6 +211,15 @@ If you see errors like `The column User.emailNotifications does not exist`:
 - BullMQ is optional - app will work without it
 - If not using Redis, nightly agent won't run
 - Manual queries will still work fine
+
+### Neo4j/Knowledge Graph Issues
+- Neo4j is completely optional - app works without it
+- If not configured, knowledge graph page shows empty state
+- See [docs/NEO4J_SETUP.md](docs/NEO4J_SETUP.md) for Neo4j Aura setup (5 minutes, free tier available)
+- Common errors:
+  - "Failed to connect" → Check NEO4J_URI format (should be `neo4j+s://` for Aura)
+  - "ECONNREFUSED 127.0.0.1:7687" → Neo4j not configured (this is fine, feature is optional)
+  - "Authentication failed" → Verify NEO4J_USERNAME and NEO4J_PASSWORD
 
 ## 🎯 Production URLs
 

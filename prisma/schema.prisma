@@ -30,6 +30,39 @@ enum FeedbackType {
   IRRELEVANT
 }
 
+enum QuestionCategory {
+  CONTINUATION      // Follow-up to recent query
+  EXPLORATION       // New direction
+  DEEPENING         // Dig deeper into topic
+  COMPARISON        // Compare X vs Y
+  TREND             // What's new/emerging
+  GAP               // Area you haven't explored
+  TEAM_INSIGHT      // Based on team activity
+  TEMPORAL          // Time-sensitive (deadlines)
+  SERENDIPITY       // Surprising connection
+  BRIDGING          // Connect different areas
+  PRACTICAL         // Clinical/translational focus
+}
+
+enum QuestionSource {
+  QUERY_HISTORY     // User's past queries
+  KNOWLEDGE_GRAPH   // Graph analysis
+  RECENT_PAPERS     // New papers in their area
+  TEAM_ACTIVITY     // What team is researching
+  LLM_GENERATED     // AI-generated
+  DOMAIN_ONTOLOGY   // From ontology structure
+  TEMPORAL_EVENT    // Conference, deadline
+  HYBRID            // Multiple sources
+  COLLABORATIVE     // Similar researchers
+}
+
+enum ExpertiseLevel {
+  BEGINNER          // New to field
+  INTERMEDIATE      // 1-3 years
+  ADVANCED          // 3-5 years
+  EXPERT            // 5+ years
+}
+
 model User {
   id                        String    @id @default(cuid())
   email                     String    @unique
@@ -55,8 +88,11 @@ model User {
   contributions             KnowledgeContribution[]
   sessions                  Session[]
   auditLogs                 AuditLog[]
+  suggestedQuestions        SuggestedQuestion[]
+  researchProfile           UserResearchProfile?
 
   @@index([email])
+  @@index([lastLoginAt])
 }
 
 model Query {
@@ -246,4 +282,125 @@ model Annotation {
 
   @@index([responseId])
   @@index([userId])
+}
+
+// ============================================
+// INTELLIGENT QUESTION SUGGESTION SYSTEM
+// ============================================
+
+model SuggestedQuestion {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  question          String            @db.Text
+  rationale         String?           @db.Text  // Why we're suggesting this
+  category          QuestionCategory
+
+  // Scoring
+  relevanceScore    Float             // 0-1
+  noveltyScore      Float             // 0-1
+  actionabilityScore Float            // 0-1
+  impactScore       Float             // 0-1
+  overallScore      Float             // Weighted combination
+
+  // Sources that led to this question
+  sourceType        QuestionSource
+  sourceIds         String[]          // Query IDs, Paper IDs, Concept IDs
+
+  // User interaction
+  displayed         Boolean           @default(false)
+  displayedAt       DateTime?
+  clicked           Boolean           @default(false)
+  clickedAt         DateTime?
+  dismissed         Boolean           @default(false)
+  dismissedAt       DateTime?
+  executed          Boolean           @default(false)  // User actually ran query
+  executedQueryId   String?
+
+  // Context
+  generatedBy       String            // "graph-analysis", "llm-claude", "pattern-detection"
+  contextSnapshot   Json              // What was happening when generated
+
+  createdAt         DateTime          @default(now())
+  expiresAt         DateTime          // Questions get stale
+
+  @@index([userId, overallScore, expiresAt])
+  @@index([userId, displayed, clicked])
+  @@index([category, overallScore])
+  @@index([expiresAt])
+}
+
+model UserResearchProfile {
+  id                String          @id @default(cuid())
+  userId            String          @unique
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Interests (extracted from behavior)
+  primaryInterests  String[]        // ["CAR-T", "Immunotherapy"]
+  secondaryInterests String[]       // ["TME", "Biomarkers"]
+  expertiseLevel    ExpertiseLevel  @default(INTERMEDIATE)
+
+  // Research patterns
+  queryFrequency    Json            // How often they search
+  preferredSources  String[]        // Which sources they use most
+  preferredLLMs     String[]        // Which LLMs they prefer
+  searchDepth       String          @default("standard") // "quick", "standard", "deep"
+
+  // Temporal patterns
+  activeHours       Json            // When they typically search
+  weeklyPattern     Json            // M-F activity
+
+  // Preferences learned
+  paperPreferences  Json            // Open access, recency, journal tier
+  topicVelocity     Json            // How fast they switch topics
+
+  // Current focus
+  currentProjects   String[]        // Project IDs or names
+  currentGoals      String[]        // ["Prepare AACR abstract", "Grant proposal"]
+
+  // Collaborative insights
+  similarResearchers String[]       // User IDs of similar researchers
+  teamInterests     String[]        // Shared team interests
+
+  updatedAt         DateTime        @updatedAt
+  createdAt         DateTime        @default(now())
+
+  @@index([expertiseLevel])
+  @@index([updatedAt])
+}
+
+model KnowledgeGraphGap {
+  id                String    @id @default(cuid())
+
+  // What's the gap
+  missingConcept    String
+  relatedConcepts   String[]  // What it connects to
+  gapType           String    // "bridge", "frontier", "orphan"
+
+  // Why it's a gap
+  detectedBy        String    // "graph-analysis", "llm-inference"
+  detectionMethod   String?   // Algorithm used
+  evidence          Json      // Supporting data
+
+  // Importance
+  potentialImpact   Float     // 0-1
+  urgency           Float     // 0-1
+  confidence        Float     @default(0.5)  // How confident we are about this gap
+
+  // Who should care
+  relevantUsers     String[]  // User IDs
+  relevantDepartments String[] // Departments this affects
+
+  // Status
+  addressed         Boolean   @default(false)
+  addressedBy       String?   // Query ID that addressed this
+  addressedAt       DateTime?
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([potentialImpact, urgency])
+  @@index([addressed])
+  @@index([createdAt])
 }

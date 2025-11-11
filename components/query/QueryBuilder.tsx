@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { SuggestedQuestions } from "./SuggestedQuestions";
 
 export function QueryBuilder() {
   const router = useRouter();
@@ -121,6 +122,18 @@ export function QueryBuilder() {
             Describe what you're looking for. The AI will refine your query for optimal results.
           </p>
         </div>
+
+        {/* Suggested Questions - shown when query is empty */}
+        {!query.trim() && !loading && (
+          <SuggestedQuestions
+            onQuestionSelect={(selectedQuestion) => {
+              setQuery(selectedQuestion);
+              // Scroll to query input
+              document.getElementById('query')?.focus();
+            }}
+            limit={5}
+          />
+        )}
 
         {/* Data Sources */}
         <div>

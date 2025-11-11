@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import KnowledgeGraphVisualization from "@/components/knowledge/KnowledgeGraphVisualization";
 
 interface GraphData {
@@ -46,6 +47,12 @@ function KnowledgeGraphContent() {
   return (
     <div className="p-6">
       <div className="mb-6">
+        <Link
+          href="/researcher"
+          className="text-sm text-gray-500 hover:text-gray-700 mb-2 inline-block"
+        >
+          ← Back to Dashboard
+        </Link>
         <h1 className="text-3xl font-bold text-gray-900">
           Knowledge Graph Visualization
         </h1>

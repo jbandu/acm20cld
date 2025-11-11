@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/auth-config";
-import { getNeo4jSession } from "@/lib/db/neo4j";
+import { getNeo4jSession, isNeo4jConfigured } from "@/lib/db/neo4j";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,11 +10,30 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Return empty graph if Neo4j is not configured
+    if (!isNeo4jConfigured()) {
+      console.warn("Neo4j not configured - returning empty knowledge graph");
+      return NextResponse.json({
+        nodes: [],
+        links: [],
+        message: "Knowledge graph feature requires Neo4j configuration. See DEPLOYMENT.md for setup instructions.",
+      });
+    }
+
     const searchParams = request.nextUrl.searchParams;
     const queryId = searchParams.get("queryId");
     const limit = parseInt(searchParams.get("limit") || "100");
 
     const neo4jSession = await getNeo4jSession();
+
+    if (!neo4jSession) {
+      console.warn("Failed to create Neo4j session - returning empty knowledge graph");
+      return NextResponse.json({
+        nodes: [],
+        links: [],
+        message: "Knowledge graph temporarily unavailable",
+      });
+    }
 
     try {
       let result;
