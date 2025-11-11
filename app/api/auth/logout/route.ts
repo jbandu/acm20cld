@@ -1,27 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
-import { signOut } from "@/lib/auth/auth-config";
+import { cookies } from "next/headers";
 
 export async function POST(req: NextRequest) {
   try {
-    // Use NextAuth signOut function
-    await signOut({ redirect: false });
-
-    // Create redirect response
-    const response = NextResponse.redirect(new URL("/login", req.url));
+    // Get cookies object
+    const cookieStore = await cookies();
 
     // Clear all auth-related cookies
-    response.cookies.delete("authjs.session-token");
-    response.cookies.delete("__Secure-authjs.session-token");
-    response.cookies.delete("session");
+    cookieStore.delete("authjs.session-token");
+    cookieStore.delete("__Secure-authjs.session-token");
+    cookieStore.delete("authjs.callback-url");
+    cookieStore.delete("authjs.csrf-token");
 
-    return response;
+    // Create redirect response to login
+    const loginUrl = new URL("/login", req.url);
+    return NextResponse.redirect(loginUrl);
   } catch (error) {
     console.error("Logout error:", error);
-    // Still redirect even if there's an error
-    const response = NextResponse.redirect(new URL("/login", req.url));
+
+    // Still try to redirect even if there's an error
+    const loginUrl = new URL("/login", req.url);
+    const response = NextResponse.redirect(loginUrl);
+
+    // Try to clear cookies in response as fallback
     response.cookies.delete("authjs.session-token");
     response.cookies.delete("__Secure-authjs.session-token");
-    response.cookies.delete("session");
+    response.cookies.delete("authjs.callback-url");
+    response.cookies.delete("authjs.csrf-token");
+
     return response;
   }
 }
