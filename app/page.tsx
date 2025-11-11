@@ -17,10 +17,10 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-violet-50/50 via-blue-50/30 to-purple-50/50 px-6 py-12">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-violet-50/50 via-blue-50/30 to-purple-50/50 px-6 py-16">
       <div className="max-w-6xl mx-auto">
         {/* Branding Pill */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-16">
           <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full bg-violet-100/80 shadow-md border border-violet-200/60">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-purple-600 flex items-center justify-center shadow-sm">
               <span className="text-white font-bold text-sm">A</span>
@@ -33,16 +33,16 @@ export default async function HomePage() {
         </div>
 
         {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-6 leading-tight">
+        <div className="text-center mb-24">
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-8 leading-tight">
             AI-Powered Research Intelligence
           </h1>
-          <p className="text-xl md:text-2xl text-gray-600 font-medium max-w-3xl mx-auto mb-10">
+          <p className="text-xl md:text-2xl text-gray-700 font-medium max-w-3xl mx-auto mb-12">
             Enterprise-grade platform combining multi-source search, AI insights, and knowledge graphs to accelerate biomedical research.
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
             <Link
               href="/login"
               className="px-10 py-4 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
@@ -51,7 +51,7 @@ export default async function HomePage() {
             </Link>
             <Link
               href="/register"
-              className="px-10 py-4 bg-white text-violet-700 font-semibold rounded-full border-2 border-violet-300 hover:border-violet-400 hover:bg-violet-50 transition-all duration-200 shadow-md"
+              className="px-10 py-4 bg-white text-violet-800 font-semibold rounded-full border-2 border-violet-400 hover:border-violet-500 hover:bg-violet-50 transition-all duration-200 shadow-lg"
             >
               Create Account
             </Link>
@@ -59,7 +59,7 @@ export default async function HomePage() {
         </div>
 
         {/* Feature Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-32">
           {/* Card 1: Multi-Source Search */}
           <div className="group relative bg-gradient-to-br from-purple-50/80 to-blue-50/80 rounded-2xl p-8 shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 ease-out overflow-hidden border border-purple-100/50">
             <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-200/30 to-blue-200/30 rounded-full blur-3xl -mr-12 -mt-12" />
