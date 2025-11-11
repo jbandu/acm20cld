@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db/prisma";
 import { refineQuery, summarizeResearchResults } from "@/lib/integrations/claude";
 import { queryOpenAI } from "@/lib/integrations/openai";
+import { analyzeWithOllama, isOllamaAvailable } from "@/lib/integrations/ollama";
 import { searchOpenAlex, reconstructAbstract } from "@/lib/integrations/openalex";
 import { searchPubMed } from "@/lib/integrations/pubmed";
 import { searchGooglePatents } from "@/lib/integrations/google-patents";
@@ -285,6 +286,20 @@ Results: ${JSON.stringify(results.slice(0, 10))}`,
         maxTokens: 4000,
       });
       summary = response.content;
+    } else if (llm === "ollama") {
+      // Check if Ollama is available
+      if (await isOllamaAvailable()) {
+        const context = results.slice(0, 10).map((r) =>
+          JSON.stringify({
+            title: r.title,
+            abstract: r.abstract,
+            citations: r.citationCount,
+          })
+        );
+        summary = await analyzeWithOllama(originalQuery, context);
+      } else {
+        summary = "Ollama is not available. Please ensure Ollama is running locally.";
+      }
     } else {
       summary = "Summary not available for this LLM";
     }

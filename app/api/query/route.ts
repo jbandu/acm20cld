@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     }
 
     const validSources = ["openalex", "pubmed", "patents"];
-    const validLLMs = ["claude", "gpt4"];
+    const validLLMs = ["claude", "gpt4", "ollama"];
 
     if (!config.sources.every((s) => validSources.includes(s))) {
       return NextResponse.json(

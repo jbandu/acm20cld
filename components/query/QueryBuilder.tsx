@@ -30,6 +30,7 @@ export function QueryBuilder() {
   const availableLLMs = [
     { id: "claude", name: "Claude (Anthropic)", description: "Best for detailed analysis" },
     { id: "gpt4", name: "GPT-4 (OpenAI)", description: "Alternative perspective" },
+    { id: "ollama", name: "Ollama (Local)", description: "Run models locally (Llama 2, Mistral, etc.)" },
   ];
 
   const toggleSource = (sourceId: string) => {
