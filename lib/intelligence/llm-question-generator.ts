@@ -286,7 +286,7 @@ Make questions natural, specific, and genuinely useful for advancing their resea
         reasoning: q.reasoning,
         priority: q.priority || "medium",
         score: this.priorityToScore(q.priority),
-        sourceType: "LLM_GENERATED",
+        sourceType: "llm-claude",
       }));
     } catch (error) {
       console.error("Error parsing Claude response:", error);
@@ -386,7 +386,7 @@ Return ONLY a valid JSON object:
           reasoning: "CAR-T therapy is rapidly evolving. Understanding recent advances is crucial.",
           priority: "high",
           score: 0.9,
-          sourceType: "LLM_GENERATED",
+          sourceType: "llm-fallback",
         },
         {
           question: "Which immunotherapy approaches show the most promise in 2025?",
@@ -394,7 +394,7 @@ Return ONLY a valid JSON object:
           reasoning: "Staying current with immunotherapy trends is essential for cancer research.",
           priority: "high",
           score: 0.9,
-          sourceType: "LLM_GENERATED",
+          sourceType: "llm-fallback",
         },
       ],
       General: [
@@ -404,7 +404,7 @@ Return ONLY a valid JSON object:
           reasoning: "High-impact papers shape the direction of research.",
           priority: "high",
           score: 0.9,
-          sourceType: "LLM_GENERATED",
+          sourceType: "llm-fallback",
         },
       ],
     };

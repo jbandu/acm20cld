@@ -126,7 +126,7 @@ export class QuestionOrchestrator {
         category: q.category || q.type || "EXPLORATION",
         reasoning: q.reasoning,
         baseScore: q.score || 0.5,
-        sourceType: q.sourceType || "LLM_GENERATED",
+        sourceType: q.sourceType || "unknown",
         sourceIds: q.sourceIds || q.sourceQueryIds || [],
       };
     });
