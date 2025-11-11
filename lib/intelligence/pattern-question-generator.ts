@@ -9,13 +9,15 @@ import { prisma } from "@/lib/db/prisma";
 import { maxSimilarity } from "./semantic-utils";
 import type { QuestionCategory } from "@prisma/client";
 
+import type { QuestionSource } from "@prisma/client";
+
 export interface PatternInsight {
   question: string;
   reasoning: string;
   score: number;
   category: QuestionCategory;
   patternType: string;
-  sourceType: string;
+  sourceType: QuestionSource;
   sourceQueryIds: string[];
 }
 
@@ -146,7 +148,7 @@ export class PatternQuestionGenerator {
         score: 0.85,
         category: "DEEPENING",
         patternType: "deep_dive",
-        sourceType: "pattern",
+        sourceType: "QUERY_HISTORY",
         sourceQueryIds,
       },
       {
@@ -155,7 +157,7 @@ export class PatternQuestionGenerator {
         score: 0.8,
         category: "TREND",
         patternType: "deep_dive",
-        sourceType: "pattern",
+        sourceType: "QUERY_HISTORY",
         sourceQueryIds,
       },
       {
@@ -164,7 +166,7 @@ export class PatternQuestionGenerator {
         score: 0.75,
         category: "PRACTICAL",
         patternType: "deep_dive",
-        sourceType: "pattern",
+        sourceType: "QUERY_HISTORY",
         sourceQueryIds,
       },
       {
@@ -173,7 +175,7 @@ export class PatternQuestionGenerator {
         score: 0.7,
         category: "EXPLORATION",
         patternType: "deep_dive",
-        sourceType: "pattern",
+        sourceType: "QUERY_HISTORY",
         sourceQueryIds,
       },
     ];
@@ -195,7 +197,7 @@ export class PatternQuestionGenerator {
         score: 0.85,
         category: "COMPARISON",
         patternType: "comparison",
-        sourceType: "pattern",
+        sourceType: "QUERY_HISTORY",
         sourceQueryIds,
       },
       {
@@ -204,7 +206,7 @@ export class PatternQuestionGenerator {
         score: 0.8,
         category: "PRACTICAL",
         patternType: "comparison",
-        sourceType: "pattern",
+        sourceType: "QUERY_HISTORY",
         sourceQueryIds,
       },
       {
@@ -213,7 +215,7 @@ export class PatternQuestionGenerator {
         score: 0.75,
         category: "EXPLORATION",
         patternType: "comparison",
-        sourceType: "pattern",
+        sourceType: "QUERY_HISTORY",
         sourceQueryIds,
       },
       {
@@ -222,7 +224,7 @@ export class PatternQuestionGenerator {
         score: 0.7,
         category: "PRACTICAL",
         patternType: "comparison",
-        sourceType: "pattern",
+        sourceType: "QUERY_HISTORY",
         sourceQueryIds,
       },
     ];
@@ -242,7 +244,7 @@ export class PatternQuestionGenerator {
         score: 0.85,
         category: "BRIDGING",
         patternType: "exploration",
-        sourceType: "pattern",
+        sourceType: "QUERY_HISTORY",
         sourceQueryIds,
       },
       {
@@ -251,7 +253,7 @@ export class PatternQuestionGenerator {
         score: 0.75,
         category: "TREND",
         patternType: "exploration",
-        sourceType: "pattern",
+        sourceType: "QUERY_HISTORY",
         sourceQueryIds,
       },
       {
@@ -260,7 +262,7 @@ export class PatternQuestionGenerator {
         score: 0.7,
         category: "BRIDGING",
         patternType: "exploration",
-        sourceType: "pattern",
+        sourceType: "QUERY_HISTORY",
         sourceQueryIds,
       },
     ];
@@ -280,7 +282,7 @@ export class PatternQuestionGenerator {
         score: 0.85,
         category: "EXPLORATION",
         patternType: "problem_solving",
-        sourceType: "pattern",
+        sourceType: "QUERY_HISTORY",
         sourceQueryIds,
       },
       {
@@ -289,7 +291,7 @@ export class PatternQuestionGenerator {
         score: 0.8,
         category: "DEEPENING",
         patternType: "problem_solving",
-        sourceType: "pattern",
+        sourceType: "QUERY_HISTORY",
         sourceQueryIds,
       },
       {
@@ -298,7 +300,7 @@ export class PatternQuestionGenerator {
         score: 0.75,
         category: "EXPLORATION",
         patternType: "problem_solving",
-        sourceType: "pattern",
+        sourceType: "QUERY_HISTORY",
         sourceQueryIds,
       },
     ];
@@ -325,7 +327,7 @@ export class PatternQuestionGenerator {
           score: 0.9,
           category: "TREND",
           patternType: "new_user_starter",
-          sourceType: "pattern",
+          sourceType: "QUERY_HISTORY",
           sourceQueryIds: [],
         },
         {
@@ -334,7 +336,7 @@ export class PatternQuestionGenerator {
           score: 0.85,
           category: "EXPLORATION",
           patternType: "new_user_starter",
-          sourceType: "pattern",
+          sourceType: "QUERY_HISTORY",
           sourceQueryIds: [],
         },
         {
@@ -343,7 +345,7 @@ export class PatternQuestionGenerator {
           score: 0.85,
           category: "PRACTICAL",
           patternType: "new_user_starter",
-          sourceType: "pattern",
+          sourceType: "QUERY_HISTORY",
           sourceQueryIds: [],
         },
         {
@@ -352,7 +354,7 @@ export class PatternQuestionGenerator {
           score: 0.8,
           category: "DEEPENING",
           patternType: "new_user_starter",
-          sourceType: "pattern",
+          sourceType: "QUERY_HISTORY",
           sourceQueryIds: [],
         },
       ],
@@ -363,7 +365,7 @@ export class PatternQuestionGenerator {
           score: 0.8,
           category: "TREND",
           patternType: "new_user_starter",
-          sourceType: "pattern",
+          sourceType: "QUERY_HISTORY",
           sourceQueryIds: [],
         },
         {
@@ -372,7 +374,7 @@ export class PatternQuestionGenerator {
           score: 0.75,
           category: "PRACTICAL",
           patternType: "new_user_starter",
-          sourceType: "pattern",
+          sourceType: "QUERY_HISTORY",
           sourceQueryIds: [],
         },
         {
@@ -381,7 +383,7 @@ export class PatternQuestionGenerator {
           score: 0.75,
           category: "TREND",
           patternType: "new_user_starter",
-          sourceType: "pattern",
+          sourceType: "QUERY_HISTORY",
           sourceQueryIds: [],
         },
       ],
@@ -395,7 +397,7 @@ export class PatternQuestionGenerator {
         score: 0.9,
         category: "TREND" as QuestionCategory,
         patternType: "new_user_interest",
-        sourceType: "pattern",
+        sourceType: "QUERY_HISTORY",
         sourceQueryIds: [],
       }));
     }
