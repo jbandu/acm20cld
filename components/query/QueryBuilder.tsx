@@ -103,11 +103,11 @@ export function QueryBuilder() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-8">
         {/* Query Input */}
-        <div>
-          <label htmlFor="query" className="block text-sm font-medium text-gray-700 mb-2">
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
+          <label htmlFor="query" className="block text-base font-semibold text-gray-900 mb-3">
             Research Query
           </label>
           <textarea
@@ -115,11 +115,11 @@ export function QueryBuilder() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="e.g., Latest developments in CAR-T cell therapy for solid tumors"
-            rows={4}
-            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            rows={5}
+            className="w-full rounded-xl border-2 border-gray-300 shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all text-base p-4"
             disabled={loading}
           />
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-3 text-sm text-gray-600 leading-relaxed">
             Describe what you're looking for. The AI will refine your query for optimal results.
           </p>
         </div>
@@ -137,69 +137,77 @@ export function QueryBuilder() {
         )}
 
         {/* Data Sources */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
+          <label className="block text-base font-semibold text-gray-900 mb-5">
             Data Sources
           </label>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {availableSources.map((source) => (
               <label
                 key={source.id}
-                className="flex items-start p-3 border rounded-md cursor-pointer hover:bg-gray-50"
+                className={`flex flex-col p-5 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
+                  sources.includes(source.id)
+                    ? 'border-purple-500 bg-purple-50 shadow-md'
+                    : 'border-gray-200 hover:border-purple-300 hover:shadow-md'
+                }`}
               >
-                <input
-                  type="checkbox"
-                  checked={sources.includes(source.id)}
-                  onChange={() => toggleSource(source.id)}
-                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  disabled={loading}
-                />
-                <div className="ml-3">
-                  <div className="text-sm font-medium text-gray-900">{source.name}</div>
-                  <div className="text-xs text-gray-500">{source.description}</div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-base font-semibold text-gray-900">{source.name}</div>
+                  <input
+                    type="checkbox"
+                    checked={sources.includes(source.id)}
+                    onChange={() => toggleSource(source.id)}
+                    className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                    disabled={loading}
+                  />
                 </div>
+                <div className="text-sm text-gray-600">{source.description}</div>
               </label>
             ))}
           </div>
         </div>
 
         {/* LLM Selection */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            AI Analysis (Select LLMs)
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
+          <label className="block text-base font-semibold text-gray-900 mb-5">
+            AI Analysis Models
           </label>
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {availableLLMs.map((llm) => (
               <label
                 key={llm.id}
-                className="flex items-start p-3 border rounded-md cursor-pointer hover:bg-gray-50"
+                className={`flex flex-col p-5 border-2 rounded-xl cursor-pointer transition-all duration-200 ${
+                  llms.includes(llm.id)
+                    ? 'border-blue-500 bg-blue-50 shadow-md'
+                    : 'border-gray-200 hover:border-blue-300 hover:shadow-md'
+                }`}
               >
-                <input
-                  type="checkbox"
-                  checked={llms.includes(llm.id)}
-                  onChange={() => toggleLLM(llm.id)}
-                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  disabled={loading}
-                />
-                <div className="ml-3">
-                  <div className="text-sm font-medium text-gray-900">{llm.name}</div>
-                  <div className="text-xs text-gray-500">{llm.description}</div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-base font-semibold text-gray-900">{llm.name}</div>
+                  <input
+                    type="checkbox"
+                    checked={llms.includes(llm.id)}
+                    onChange={() => toggleLLM(llm.id)}
+                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    disabled={loading}
+                  />
                 </div>
+                <div className="text-sm text-gray-600">{llm.description}</div>
               </label>
             ))}
           </div>
         </div>
 
         {/* Advanced Filters */}
-        <div className="border-t pt-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-gray-900"
+            className="flex items-center justify-between w-full text-base font-semibold text-gray-900 hover:text-purple-600 transition-colors"
           >
             <span>Advanced Filters</span>
             <svg
-              className={`w-5 h-5 transform transition-transform ${
+              className={`w-6 h-6 transform transition-transform ${
                 showAdvanced ? "rotate-180" : ""
               }`}
               fill="none"
@@ -211,30 +219,30 @@ export function QueryBuilder() {
           </button>
 
           {showAdvanced && (
-            <div className="mt-4 space-y-4 bg-gray-50 p-4 rounded-lg">
+            <div className="mt-6 space-y-5 pt-6 border-t border-gray-200">
               {/* Date Range */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-2">
                     Published From
                   </label>
                   <input
                     type="date"
                     value={dateFrom}
                     onChange={(e) => setDateFrom(e.target.value)}
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                    className="w-full rounded-xl border-2 border-gray-300 shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all p-3"
                     disabled={loading}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-900 mb-2">
                     Published To
                   </label>
                   <input
                     type="date"
                     value={dateTo}
                     onChange={(e) => setDateTo(e.target.value)}
-                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                    className="w-full rounded-xl border-2 border-gray-300 shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all p-3"
                     disabled={loading}
                   />
                 </div>
@@ -242,7 +250,7 @@ export function QueryBuilder() {
 
               {/* Minimum Citations */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-900 mb-2">
                   Minimum Citation Count
                 </label>
                 <input
@@ -251,20 +259,20 @@ export function QueryBuilder() {
                   value={minCitations}
                   onChange={(e) => setMinCitations(e.target.value ? parseInt(e.target.value) : "")}
                   placeholder="e.g., 10"
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  className="w-full rounded-xl border-2 border-gray-300 shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all p-3"
                   disabled={loading}
                 />
               </div>
 
               {/* Publication Type */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-900 mb-2">
                   Publication Type
                 </label>
                 <select
                   value={publicationType}
                   onChange={(e) => setPublicationType(e.target.value)}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  className="w-full rounded-xl border-2 border-gray-300 shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all p-3"
                   disabled={loading}
                 >
                   <option value="all">All Types</option>
@@ -278,7 +286,7 @@ export function QueryBuilder() {
 
               {/* Max Results */}
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-900 mb-2">
                   Maximum Results
                 </label>
                 <input
@@ -287,7 +295,7 @@ export function QueryBuilder() {
                   max="100"
                   value={maxResults}
                   onChange={(e) => setMaxResults(parseInt(e.target.value) || 25)}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  className="w-full rounded-xl border-2 border-gray-300 shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-100 transition-all p-3"
                   disabled={loading}
                 />
               </div>
@@ -310,7 +318,7 @@ export function QueryBuilder() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <div className="bg-red-50 border-2 border-red-300 text-red-800 px-6 py-4 rounded-xl font-medium shadow-lg">
             {error}
           </div>
         )}
@@ -318,12 +326,13 @@ export function QueryBuilder() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+          className="w-full text-white py-5 px-6 rounded-2xl font-bold text-lg shadow-2xl hover:shadow-2xl transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          style={{background: loading ? '#9CA3AF' : 'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)'}}
         >
           {loading ? (
             <span className="flex items-center justify-center">
               <svg
-                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                className="animate-spin -ml-1 mr-3 h-6 w-6 text-white"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
