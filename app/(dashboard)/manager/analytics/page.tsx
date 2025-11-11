@@ -37,9 +37,9 @@ export default async function AnalyticsPage() {
           },
         },
       })
-      .then((queries) => {
+      .then((queries: any) => {
         if (queries.length === 0) return 0;
-        const total = queries.reduce((sum, q) => sum + q._count.responses, 0);
+        const total = queries.reduce((sum: number, q: any) => sum + q._count.responses, 0);
         return Math.round(total / queries.length);
       }),
     prisma.response
@@ -47,17 +47,17 @@ export default async function AnalyticsPage() {
         by: ["source"],
         _count: true,
       })
-      .then((groups) =>
-        groups.sort((a, b) => b._count - a._count).slice(0, 5)
+      .then((groups: any) =>
+        groups.sort((a: any, b: any) => b._count - a._count).slice(0, 5)
       ),
     prisma.query
       .findMany({
         select: { llms: true },
       })
-      .then((queries) => {
+      .then((queries: any) => {
         const llmCounts = new Map<string, number>();
-        queries.forEach((q) => {
-          q.llms.forEach((llm) => {
+        queries.forEach((q: any) => {
+          q.llms.forEach((llm: string) => {
             llmCounts.set(llm, (llmCounts.get(llm) || 0) + 1);
           });
         });
@@ -131,7 +131,7 @@ export default async function AnalyticsPage() {
               Top Data Sources
             </h3>
             <div className="space-y-3">
-              {topSources.map((item, index) => (
+              {topSources.map((item: any, index: number) => (
                 <div key={item.source}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-medium text-gray-700">
@@ -158,7 +158,7 @@ export default async function AnalyticsPage() {
               Most Used LLMs
             </h3>
             <div className="space-y-3">
-              {topLLMs.map((item, index) => (
+              {topLLMs.map((item: any, index: number) => (
                 <div key={item.llm}>
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-sm font-medium text-gray-700">
@@ -193,7 +193,7 @@ export default async function AnalyticsPage() {
                 No research digests yet
               </div>
             ) : (
-              recentDigests.map((digest) => (
+              recentDigests.map((digest: any) => (
                 <div key={digest.id} className="p-6">
                   <div className="flex items-start justify-between mb-2">
                     <div>
@@ -215,7 +215,7 @@ export default async function AnalyticsPage() {
                   </div>
                   {digest.topTopics.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {digest.topTopics.slice(0, 5).map((topic, idx) => (
+                      {digest.topTopics.slice(0, 5).map((topic: string, idx: number) => (
                         <span
                           key={idx}
                           className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs"
