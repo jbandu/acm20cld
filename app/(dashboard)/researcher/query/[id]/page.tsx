@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db/prisma";
 import { ResponseCard } from "@/components/results/ResponseCard";
 import { ExportButton } from "@/components/results/ExportButton";
 import { QueryInfo } from "@/components/results/QueryInfo";
+import { QueryResultsClient } from "@/components/query/QueryResultsClient";
 import Link from "next/link";
 
 export default async function QueryResultsPage({
@@ -35,6 +36,11 @@ export default async function QueryResultsPage({
     redirect("/researcher");
   }
 
+  // Get total query count for celebration logic
+  const queryCount = await prisma.query.count({
+    where: { userId: session.user.id },
+  });
+
   const statusColors = {
     PENDING: "bg-yellow-100 text-yellow-800",
     PROCESSING: "bg-blue-100 text-blue-800",
@@ -44,6 +50,15 @@ export default async function QueryResultsPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* First Query Celebration */}
+      <QueryResultsClient
+        isCompleted={query.status === "COMPLETED"}
+        resultsCount={query.responses.length}
+        startedAt={query.startedAt}
+        completedAt={query.completedAt}
+        queryCount={queryCount}
+      />
+
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">

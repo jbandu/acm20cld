@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth/auth-config";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db/prisma";
 import Link from "next/link";
+import { ResearcherDashboardClient } from "@/components/dashboard/ResearcherDashboardClient";
 
 export default async function ResearcherDashboard() {
   const session = await auth();
@@ -23,10 +24,21 @@ export default async function ResearcherDashboard() {
   // Fetch user role to show CEO dashboard card if applicable
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { role: true },
+    select: { role: true, name: true, createdAt: true },
   });
 
   const isCEO = user?.role === "ADMIN";
+
+  // Calculate days since account creation
+  const createdDaysAgo = user?.createdAt
+    ? Math.floor((Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24))
+    : 999;
+
+  // Check if user has any queries
+  const queryCount = await prisma.query.count({
+    where: { userId: session.user.id },
+  });
+  const hasQueries = queryCount > 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50/30 via-purple-50/20 to-pink-50/30">
@@ -67,6 +79,12 @@ export default async function ResearcherDashboard() {
 
       {/* Main Content - Centered with generous padding and white space */}
       <main className="max-w-6xl mx-auto px-6 lg:px-10 py-12">
+        {/* Welcome Flow and Widget */}
+        <ResearcherDashboardClient
+          userName={user?.name || session.user.name || "there"}
+          hasQueries={hasQueries}
+          createdDaysAgo={createdDaysAgo}
+        />
         {/* Responsive Grid: 1 col mobile, 2 cols tablet, 3 cols desktop */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Card 1: New Research Query */}
