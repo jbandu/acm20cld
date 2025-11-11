@@ -162,13 +162,13 @@ export default function ProfileEditForm({ user }: { user: User }) {
       )}
 
       {/* Basic Information */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+      <div className="bg-white rounded-lg shadow-card border border-neutral-200 p-6">
+        <h2 className="text-xl font-semibold text-neutral-900 mb-4">
           Basic Information
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               Name *
             </label>
             <input
@@ -176,25 +176,25 @@ export default function ProfileEditForm({ user }: { user: User }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               Email
             </label>
             <input
               type="email"
               value={user.email}
               disabled
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md bg-gray-100 text-neutral-500"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-neutral-500 mt-1">
               Email cannot be changed
             </p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               Title
             </label>
             <input
@@ -202,11 +202,11 @@ export default function ProfileEditForm({ user }: { user: User }) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., PhD Candidate, Principal Investigator"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               Department
             </label>
             <input
@@ -214,11 +214,11 @@ export default function ProfileEditForm({ user }: { user: User }) {
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
               placeholder="e.g., Cancer Biology"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               Institution
             </label>
             <input
@@ -226,11 +226,11 @@ export default function ProfileEditForm({ user }: { user: User }) {
               value={institution}
               onChange={(e) => setInstitution(e.target.value)}
               placeholder="e.g., Harvard Medical School"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               Location
             </label>
             <input
@@ -238,12 +238,12 @@ export default function ProfileEditForm({ user }: { user: User }) {
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               placeholder="e.g., Boston, MA"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
         </div>
         <div className="mt-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-neutral-700 mb-1">
             Bio
           </label>
           <textarea
@@ -251,25 +251,25 @@ export default function ProfileEditForm({ user }: { user: User }) {
             onChange={(e) => setBio(e.target.value)}
             rows={4}
             placeholder="Tell us about yourself..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
       </div>
 
       {/* Research Profile */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+      <div className="bg-white rounded-lg shadow-card border border-neutral-200 p-6">
+        <h2 className="text-xl font-semibold text-neutral-900 mb-4">
           Research Profile
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               Highest Degree
             </label>
             <select
               value={highestDegree}
               onChange={(e) => setHighestDegree(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             >
               <option value="">Select degree</option>
               <option value="BS">BS</option>
@@ -280,7 +280,7 @@ export default function ProfileEditForm({ user }: { user: User }) {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               Years in Field
             </label>
             <input
@@ -289,11 +289,11 @@ export default function ProfileEditForm({ user }: { user: User }) {
               onChange={(e) => setYearsInField(e.target.value)}
               min="0"
               placeholder="0"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               ORCID ID
             </label>
             <input
@@ -301,11 +301,11 @@ export default function ProfileEditForm({ user }: { user: User }) {
               value={orcidId}
               onChange={(e) => setOrcidId(e.target.value)}
               placeholder="0000-0000-0000-0000"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               Google Scholar ID
             </label>
             <input
@@ -313,12 +313,12 @@ export default function ProfileEditForm({ user }: { user: User }) {
               value={googleScholarId}
               onChange={(e) => setGoogleScholarId(e.target.value)}
               placeholder="Scholar ID"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
           </div>
         </div>
         <div className="mt-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-neutral-700 mb-1">
             PhD Research Focus
           </label>
           <textarea
@@ -326,11 +326,11 @@ export default function ProfileEditForm({ user }: { user: User }) {
             onChange={(e) => setPhdFocus(e.target.value)}
             rows={3}
             placeholder="Describe your PhD research focus..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
         </div>
         <div className="mt-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-neutral-700 mb-1">
             Primary Research Interests
           </label>
           <input
@@ -338,12 +338,12 @@ export default function ProfileEditForm({ user }: { user: User }) {
             value={primaryInterests}
             onChange={(e) => setPrimaryInterests(e.target.value)}
             placeholder="Comma-separated (e.g., CAR-T, Immunotherapy, Cancer Biology)"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
-          <p className="text-xs text-gray-500 mt-1">Separate with commas</p>
+          <p className="text-xs text-neutral-500 mt-1">Separate with commas</p>
         </div>
         <div className="mt-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-neutral-700 mb-1">
             Secondary Research Interests
           </label>
           <input
@@ -351,12 +351,12 @@ export default function ProfileEditForm({ user }: { user: User }) {
             value={secondaryInterests}
             onChange={(e) => setSecondaryInterests(e.target.value)}
             placeholder="Comma-separated"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
-          <p className="text-xs text-gray-500 mt-1">Separate with commas</p>
+          <p className="text-xs text-neutral-500 mt-1">Separate with commas</p>
         </div>
         <div className="mt-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-neutral-700 mb-1">
             Laboratory Techniques
           </label>
           <input
@@ -364,12 +364,12 @@ export default function ProfileEditForm({ user }: { user: User }) {
             value={techniques}
             onChange={(e) => setTechniques(e.target.value)}
             placeholder="Comma-separated (e.g., Flow Cytometry, PCR, Western Blot)"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
-          <p className="text-xs text-gray-500 mt-1">Separate with commas</p>
+          <p className="text-xs text-neutral-500 mt-1">Separate with commas</p>
         </div>
         <div className="mt-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-neutral-700 mb-1">
             Computational Skills
           </label>
           <input
@@ -377,15 +377,15 @@ export default function ProfileEditForm({ user }: { user: User }) {
             value={computationalSkills}
             onChange={(e) => setComputationalSkills(e.target.value)}
             placeholder="Comma-separated (e.g., Python, R, Bioinformatics)"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
           />
-          <p className="text-xs text-gray-500 mt-1">Separate with commas</p>
+          <p className="text-xs text-neutral-500 mt-1">Separate with commas</p>
         </div>
       </div>
 
       {/* Notification Preferences */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+      <div className="bg-white rounded-lg shadow-card border border-neutral-200 p-6">
+        <h2 className="text-xl font-semibold text-neutral-900 mb-4">
           Notification Preferences
         </h2>
         <div className="space-y-3">
@@ -395,11 +395,11 @@ export default function ProfileEditForm({ user }: { user: User }) {
               id="emailNotifications"
               checked={emailNotifications}
               onChange={(e) => setEmailNotifications(e.target.checked)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-primary-600 border-neutral-300 rounded focus:ring-primary-500"
             />
             <label
               htmlFor="emailNotifications"
-              className="ml-2 text-sm text-gray-700"
+              className="ml-2 text-sm text-neutral-700"
             >
               Email Notifications
             </label>
@@ -410,11 +410,11 @@ export default function ProfileEditForm({ user }: { user: User }) {
               id="notifyOnQueryComplete"
               checked={notifyOnQueryComplete}
               onChange={(e) => setNotifyOnQueryComplete(e.target.checked)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-primary-600 border-neutral-300 rounded focus:ring-primary-500"
             />
             <label
               htmlFor="notifyOnQueryComplete"
-              className="ml-2 text-sm text-gray-700"
+              className="ml-2 text-sm text-neutral-700"
             >
               Query Completion Notifications
             </label>
@@ -425,11 +425,11 @@ export default function ProfileEditForm({ user }: { user: User }) {
               id="notifyWeeklyDigest"
               checked={notifyWeeklyDigest}
               onChange={(e) => setNotifyWeeklyDigest(e.target.checked)}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="w-4 h-4 text-primary-600 border-neutral-300 rounded focus:ring-primary-500"
             />
             <label
               htmlFor="notifyWeeklyDigest"
-              className="ml-2 text-sm text-gray-700"
+              className="ml-2 text-sm text-neutral-700"
             >
               Weekly Digest
             </label>
@@ -442,14 +442,14 @@ export default function ProfileEditForm({ user }: { user: User }) {
         <button
           type="button"
           onClick={() => router.push("/researcher/profile")}
-          className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition"
+          className="px-6 py-2 border border-neutral-300 rounded-md text-neutral-700 hover:bg-neutral-50 transition"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="px-6 py-2 bg-gradient-primary text-white rounded-lg hover:shadow-primary transition disabled:bg-neutral-400 disabled:cursor-not-allowed"
         >
           {loading ? "Saving..." : "Save Changes"}
         </button>
