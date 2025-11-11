@@ -31,131 +31,190 @@ enum FeedbackType {
 }
 
 enum QuestionCategory {
-  CONTINUATION      // Follow-up to recent query
-  EXPLORATION       // New direction
-  DEEPENING         // Dig deeper into topic
-  COMPARISON        // Compare X vs Y
-  TREND             // What's new/emerging
-  GAP               // Area you haven't explored
-  TEAM_INSIGHT      // Based on team activity
-  TEMPORAL          // Time-sensitive (deadlines)
-  SERENDIPITY       // Surprising connection
-  BRIDGING          // Connect different areas
-  PRACTICAL         // Clinical/translational focus
+  CONTINUATION // Follow-up to recent query
+  EXPLORATION // New direction
+  DEEPENING // Dig deeper into topic
+  COMPARISON // Compare X vs Y
+  TREND // What's new/emerging
+  GAP // Area you haven't explored
+  TEAM_INSIGHT // Based on team activity
+  TEMPORAL // Time-sensitive (deadlines)
+  SERENDIPITY // Surprising connection
+  BRIDGING // Connect different areas
+  PRACTICAL // Clinical/translational focus
 }
 
 enum QuestionSource {
-  QUERY_HISTORY     // User's past queries
-  KNOWLEDGE_GRAPH   // Graph analysis
-  RECENT_PAPERS     // New papers in their area
-  TEAM_ACTIVITY     // What team is researching
-  LLM_GENERATED     // AI-generated
-  DOMAIN_ONTOLOGY   // From ontology structure
-  TEMPORAL_EVENT    // Conference, deadline
-  HYBRID            // Multiple sources
-  COLLABORATIVE     // Similar researchers
+  QUERY_HISTORY // User's past queries
+  KNOWLEDGE_GRAPH // Graph analysis
+  RECENT_PAPERS // New papers in their area
+  TEAM_ACTIVITY // What team is researching
+  LLM_GENERATED // AI-generated
+  DOMAIN_ONTOLOGY // From ontology structure
+  TEMPORAL_EVENT // Conference, deadline
+  HYBRID // Multiple sources
+  COLLABORATIVE // Similar researchers
 }
 
 enum ExpertiseLevel {
-  BEGINNER          // New to field
-  INTERMEDIATE      // 1-3 years
-  ADVANCED          // 3-5 years
-  EXPERT            // 5+ years
+  STUDENT // PhD/PostDoc student
+  EARLY_CAREER // 0-2 years post-PhD
+  MID_CAREER // 3-7 years
+  SENIOR // 8-15 years
+  DISTINGUISHED // 15+ years
+  BEGINNER // New to field (legacy)
+  INTERMEDIATE // 1-3 years (legacy)
+  ADVANCED // 3-5 years (legacy)
+  EXPERT // 5+ years (legacy)
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  ANALYZING
+  WRITING
+  SUBMITTED
+  PUBLISHED
+  ON_HOLD
+}
+
+enum GoalType {
+  CONFERENCE_ABSTRACT
+  GRANT_PROPOSAL
+  PAPER_SUBMISSION
+  PATENT_FILING
+  EXPERIMENT_COMPLETION
+  COLLABORATION
+  LEARNING
+  OTHER
+}
+
+enum GoalStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  BLOCKED
+  COMPLETED
+  ABANDONED
+}
+
+enum ScrapingStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+  EXPIRED
 }
 
 model User {
-  id                        String    @id @default(cuid())
-  email                     String    @unique
-  name                      String
-  password                  String    // Hashed
-  role                      Role      @default(RESEARCHER)
-  department                String?
-  mfaEnabled                Boolean   @default(false)
-  mfaSecret                 String?
-  emailVerified             DateTime?
-  lastLoginAt               DateTime?
+  id       String @id @default(cuid())
+  email    String @unique
+  name     String
+  password String // Hashed
+  role     Role   @default(RESEARCHER)
+
+  // Basic professional info
+  avatar      String?
+  title       String? // "PhD Candidate", "Principal Investigator"
+  department  String?
+  institution String?
+  location    String?
+  bio         String? @db.Text
+
+  // Auth & Security
+  mfaEnabled    Boolean   @default(false)
+  mfaSecret     String?
+  emailVerified DateTime?
+  lastLoginAt   DateTime?
 
   // Email notification preferences
-  emailNotifications        Boolean   @default(true)
-  notifyOnQueryComplete     Boolean   @default(true)
-  notifyWeeklyDigest        Boolean   @default(true)
+  emailNotifications    Boolean @default(true)
+  notifyOnQueryComplete Boolean @default(true)
+  notifyWeeklyDigest    Boolean @default(true)
 
-  createdAt                 DateTime  @default(now())
-  updatedAt                 DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  queries                   Query[]
-  feedback                  Feedback[]
-  contributions             KnowledgeContribution[]
-  sessions                  Session[]
-  auditLogs                 AuditLog[]
-  suggestedQuestions        SuggestedQuestion[]
-  researchProfile           UserResearchProfile?
+  // Relations
+  queries            Query[]
+  feedback           Feedback[]
+  contributions      KnowledgeContribution[]
+  sessions           Session[]
+  auditLogs          AuditLog[]
+  suggestedQuestions SuggestedQuestion[]
+
+  // Enhanced profile relations
+  researchProfile UserResearchProfile?
+  preferences     UserPreferences?
+  linkedinProfile LinkedInProfile?
+  goals           UserGoal[]
+  behaviorProfile UserBehaviorProfile?
 
   @@index([email])
   @@index([lastLoginAt])
+  @@index([institution, department])
 }
 
 model Query {
-  id                String      @id @default(cuid())
-  userId            String
-  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  originalQuery     String      // User's original query
-  refinedQuery      String?     // LLM-refined query
-  intent            Json?       // Structured intent
+  originalQuery String // User's original query
+  refinedQuery  String? // LLM-refined query
+  intent        Json? // Structured intent
 
-  sources           String[]    // ["openalex", "patents", "pubmed"]
-  llms              String[]    // ["claude", "gpt4", "gemini"]
+  sources String[] // ["openalex", "patents", "pubmed"]
+  llms    String[] // ["claude", "gpt4", "gemini"]
 
-  status            QueryStatus @default(PENDING)
-  startedAt         DateTime    @default(now())
-  completedAt       DateTime?
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  status      QueryStatus @default(PENDING)
+  startedAt   DateTime    @default(now())
+  completedAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
-  responses         Response[]
-  feedback          Feedback[]
+  responses Response[]
+  feedback  Feedback[]
 
   @@index([userId, createdAt])
   @@index([status])
 }
 
 model Response {
-  id                String    @id @default(cuid())
-  queryId           String
-  query             Query     @relation(fields: [queryId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  queryId String
+  query   Query  @relation(fields: [queryId], references: [id], onDelete: Cascade)
 
-  source            String    // "openalex", "claude", etc.
-  rawData           Json      // Full API response
-  summary           String    // Key summary
-  fullContent       String    @db.Text
+  source      String // "openalex", "claude", etc.
+  rawData     Json // Full API response
+  summary     String // Key summary
+  fullContent String @db.Text
 
-  relevanceScore    Float?
-  citationCount     Int?
-  metadata          Json?
+  relevanceScore Float?
+  citationCount  Int?
+  metadata       Json?
 
-  createdAt         DateTime  @default(now())
+  createdAt DateTime @default(now())
 
-  feedback          Feedback[]
+  feedback Feedback[]
 
   @@index([queryId])
   @@index([source])
 }
 
 model Feedback {
-  id                String        @id @default(cuid())
-  userId            String
-  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  queryId           String?
-  query             Query?        @relation(fields: [queryId], references: [id], onDelete: Cascade)
-  responseId        String?
-  response          Response?     @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  queryId    String?
+  query      Query?    @relation(fields: [queryId], references: [id], onDelete: Cascade)
+  responseId String?
+  response   Response? @relation(fields: [responseId], references: [id], onDelete: Cascade)
 
-  type              FeedbackType
-  importance        Int?          // 1-5 scale
-  comment           String?       @db.Text
+  type       FeedbackType
+  importance Int? // 1-5 scale
+  comment    String?      @db.Text
 
-  createdAt         DateTime      @default(now())
+  createdAt DateTime @default(now())
 
   @@index([userId, createdAt])
   @@index([queryId])
@@ -163,122 +222,122 @@ model Feedback {
 }
 
 model KnowledgeContribution {
-  id                String    @id @default(cuid())
-  userId            String
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  responseId        String    // Reference to approved response
-  category          String    // Ontology category
-  tags              String[]
+  responseId String // Reference to approved response
+  category   String // Ontology category
+  tags       String[]
 
-  addedToGraph      Boolean   @default(false)
-  graphNodeId       String?   // Neo4j node ID
+  addedToGraph Boolean @default(false)
+  graphNodeId  String? // Neo4j node ID
 
-  approvedBy        String?   // Manager/Admin who approved
-  approvedAt        DateTime?
+  approvedBy String? // Manager/Admin who approved
+  approvedAt DateTime?
 
-  createdAt         DateTime  @default(now())
+  createdAt DateTime @default(now())
 
   @@index([userId, createdAt])
   @@index([addedToGraph])
 }
 
 model ResearchDigest {
-  id                String    @id @default(cuid())
-  date              DateTime  @default(now())
+  id   String   @id @default(cuid())
+  date DateTime @default(now())
 
-  sources           Json      // Summary of what was collected
-  totalArticles     Int
-  topTopics         String[]
-  keyFindings       Json
+  sources       Json // Summary of what was collected
+  totalArticles Int
+  topTopics     String[]
+  keyFindings   Json
 
-  status            String    @default("completed")
+  status String @default("completed")
 
-  createdAt         DateTime  @default(now())
+  createdAt DateTime @default(now())
 
   @@index([date])
 }
 
 model DataSource {
-  id                String    @id @default(cuid())
-  name              String    @unique
-  type              String    // "api", "database", "web"
-  endpoint          String?
-  apiKey            String?   // Encrypted
-  config            Json      // Source-specific configuration
-  enabled           Boolean   @default(true)
+  id       String  @id @default(cuid())
+  name     String  @unique
+  type     String // "api", "database", "web"
+  endpoint String?
+  apiKey   String? // Encrypted
+  config   Json // Source-specific configuration
+  enabled  Boolean @default(true)
 
-  lastSync          DateTime?
-  syncFrequency     String    @default("daily")
+  lastSync      DateTime?
+  syncFrequency String    @default("daily")
 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([enabled])
 }
 
 model Session {
-  id                String    @id @default(cuid())
-  userId            String
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  token             String    @unique
-  expiresAt         DateTime
-  createdAt         DateTime  @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([token])
 }
 
 model AuditLog {
-  id                String    @id @default(cuid())
-  userId            String
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  action            String
-  resource          String
-  details           Json?
-  ipAddress         String?
-  userAgent         String?
-  createdAt         DateTime  @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String
+  resource  String
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
 
   @@index([userId, createdAt])
   @@index([action])
 }
 
 model PromptTemplate {
-  id                String    @id @default(cuid())
-  name              String
-  description       String?
-  category          String    // "refinement", "analysis", "summarization"
-  template          String    @db.Text
-  variables         String[]  // Variables like {query}, {context}, etc.
-  isPublic          Boolean   @default(false)
-  isDefault         Boolean   @default(false)
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  category    String // "refinement", "analysis", "summarization"
+  template    String   @db.Text
+  variables   String[] // Variables like {query}, {context}, etc.
+  isPublic    Boolean  @default(false)
+  isDefault   Boolean  @default(false)
 
-  createdBy         String?
-  usageCount        Int       @default(0)
+  createdBy  String?
+  usageCount Int     @default(0)
 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([category])
   @@index([isPublic])
 }
 
 model Annotation {
-  id                String    @id @default(cuid())
-  responseId        String
-  userId            String
+  id         String @id @default(cuid())
+  responseId String
+  userId     String
 
-  content           String    @db.Text
-  highlightedText   String?   @db.Text
-  startOffset       Int?
-  endOffset         Int?
+  content         String  @db.Text
+  highlightedText String? @db.Text
+  startOffset     Int?
+  endOffset       Int?
 
-  isPublic          Boolean   @default(false)
-  tags              String[]
+  isPublic Boolean  @default(false)
+  tags     String[]
 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([responseId])
   @@index([userId])
@@ -289,41 +348,41 @@ model Annotation {
 // ============================================
 
 model SuggestedQuestion {
-  id                String            @id @default(cuid())
-  userId            String
-  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  question          String            @db.Text
-  rationale         String?           @db.Text  // Why we're suggesting this
-  category          QuestionCategory
+  question  String           @db.Text
+  rationale String?          @db.Text // Why we're suggesting this
+  category  QuestionCategory
 
   // Scoring
-  relevanceScore    Float             // 0-1
-  noveltyScore      Float             // 0-1
-  actionabilityScore Float            // 0-1
-  impactScore       Float             // 0-1
-  overallScore      Float             // Weighted combination
+  relevanceScore     Float // 0-1
+  noveltyScore       Float // 0-1
+  actionabilityScore Float // 0-1
+  impactScore        Float // 0-1
+  overallScore       Float // Weighted combination
 
   // Sources that led to this question
-  sourceType        QuestionSource
-  sourceIds         String[]          // Query IDs, Paper IDs, Concept IDs
+  sourceType QuestionSource
+  sourceIds  String[] // Query IDs, Paper IDs, Concept IDs
 
   // User interaction
-  displayed         Boolean           @default(false)
-  displayedAt       DateTime?
-  clicked           Boolean           @default(false)
-  clickedAt         DateTime?
-  dismissed         Boolean           @default(false)
-  dismissedAt       DateTime?
-  executed          Boolean           @default(false)  // User actually ran query
-  executedQueryId   String?
+  displayed       Boolean   @default(false)
+  displayedAt     DateTime?
+  clicked         Boolean   @default(false)
+  clickedAt       DateTime?
+  dismissed       Boolean   @default(false)
+  dismissedAt     DateTime?
+  executed        Boolean   @default(false) // User actually ran query
+  executedQueryId String?
 
   // Context
-  generatedBy       String            // "graph-analysis", "llm-claude", "pattern-detection"
-  contextSnapshot   Json              // What was happening when generated
+  generatedBy     String // "graph-analysis", "llm-claude", "pattern-detection"
+  contextSnapshot Json // What was happening when generated
 
-  createdAt         DateTime          @default(now())
-  expiresAt         DateTime          // Questions get stale
+  createdAt DateTime @default(now())
+  expiresAt DateTime // Questions get stale
 
   @@index([userId, overallScore, expiresAt])
   @@index([userId, displayed, clicked])
@@ -332,75 +391,379 @@ model SuggestedQuestion {
 }
 
 model UserResearchProfile {
-  id                String          @id @default(cuid())
-  userId            String          @unique
-  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Interests (extracted from behavior)
-  primaryInterests  String[]        // ["CAR-T", "Immunotherapy"]
-  secondaryInterests String[]       // ["TME", "Biomarkers"]
-  expertiseLevel    ExpertiseLevel  @default(INTERMEDIATE)
+  // Educational Background
+  education     EducationEntry[]
+  highestDegree String? // "PhD", "MD", "MS", "BS"
 
-  // Research patterns
-  queryFrequency    Json            // How often they search
-  preferredSources  String[]        // Which sources they use most
-  preferredLLMs     String[]        // Which LLMs they prefer
-  searchDepth       String          @default("standard") // "quick", "standard", "deep"
+  // Research Background
+  phdFocus           String?        @db.Text
+  researchAreas      String[]
+  primaryInterests   String[] // ["CAR-T", "Immunotherapy"]
+  secondaryInterests String[] // ["TME", "Biomarkers"]
+  expertiseLevel     ExpertiseLevel @default(INTERMEDIATE)
+  yearsInField       Int?
+
+  // Current Research
+  currentProjectDetails ProjectFocus[]
+  currentProjects       String[] // Project IDs or names (legacy)
+  currentGoals          String[] // ["Prepare AACR abstract", "Grant proposal"]
+  researchGoals         String[] // Structured goals
+
+  // Publications & Impact
+  googleScholarId  String?
+  orcidId          String?
+  publicationCount Int?
+  hIndex           Int?
+  citationCount    Int?
+
+  // Skills & Techniques
+  techniques          String[]
+  computationalSkills String[]
+
+  // Professional Network
+  collaborators String[]
+  institutions  String[]
+
+  // Research patterns (learned)
+  queryFrequency        Json // How often they search
+  preferredSources      String[] // Which sources they use most
+  preferredLLMs         String[] // Which LLMs they prefer
+  searchDepth           String   @default("standard") // "quick", "standard", "deep"
+  searchDepthPreference String   @default("standard")
 
   // Temporal patterns
-  activeHours       Json            // When they typically search
-  weeklyPattern     Json            // M-F activity
+  activeHours   Json // When they typically search
+  weeklyPattern Json // M-F activity
 
   // Preferences learned
-  paperPreferences  Json            // Open access, recency, journal tier
-  topicVelocity     Json            // How fast they switch topics
-
-  // Current focus
-  currentProjects   String[]        // Project IDs or names
-  currentGoals      String[]        // ["Prepare AACR abstract", "Grant proposal"]
+  paperPreferences Json // Open access, recency, journal tier
+  topicVelocity    Json // How fast they switch topics
+  paperRecencyBias Float   @default(0.5)
+  methodologyFocus Boolean @default(false)
 
   // Collaborative insights
-  similarResearchers String[]       // User IDs of similar researchers
-  teamInterests     String[]        // Shared team interests
+  similarResearchers String[] // User IDs of similar researchers
+  teamInterests      String[] // Shared team interests
 
-  updatedAt         DateTime        @updatedAt
-  createdAt         DateTime        @default(now())
+  // Bio & Context
+  researchStatement String? @db.Text
+
+  // Onboarding
+  onboardingComplete Boolean @default(false)
+  onboardingStep     Int     @default(0)
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
 
   @@index([expertiseLevel])
   @@index([updatedAt])
+  @@index([userId])
 }
 
 model KnowledgeGraphGap {
-  id                String    @id @default(cuid())
+  id String @id @default(cuid())
 
   // What's the gap
-  missingConcept    String
-  relatedConcepts   String[]  // What it connects to
-  gapType           String    // "bridge", "frontier", "orphan"
+  missingConcept  String
+  relatedConcepts String[] // What it connects to
+  gapType         String // "bridge", "frontier", "orphan"
 
   // Why it's a gap
-  detectedBy        String    // "graph-analysis", "llm-inference"
-  detectionMethod   String?   // Algorithm used
-  evidence          Json      // Supporting data
+  detectedBy      String // "graph-analysis", "llm-inference"
+  detectionMethod String? // Algorithm used
+  evidence        Json // Supporting data
 
   // Importance
-  potentialImpact   Float     // 0-1
-  urgency           Float     // 0-1
-  confidence        Float     @default(0.5)  // How confident we are about this gap
+  potentialImpact Float // 0-1
+  urgency         Float // 0-1
+  confidence      Float @default(0.5) // How confident we are about this gap
 
   // Who should care
-  relevantUsers     String[]  // User IDs
+  relevantUsers       String[] // User IDs
   relevantDepartments String[] // Departments this affects
 
   // Status
-  addressed         Boolean   @default(false)
-  addressedBy       String?   // Query ID that addressed this
-  addressedAt       DateTime?
+  addressed   Boolean   @default(false)
+  addressedBy String? // Query ID that addressed this
+  addressedAt DateTime?
 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([potentialImpact, urgency])
   @@index([addressed])
   @@index([createdAt])
+}
+
+// Add these models to the end of prisma/schema.prisma after KnowledgeGraphGap
+
+// ============================================
+// COMPREHENSIVE USER PROFILE SYSTEM
+// ============================================
+
+model EducationEntry {
+  id        String              @id @default(cuid())
+  profileId String
+  profile   UserResearchProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  degree      String
+  field       String
+  institution String
+  location    String?
+  startYear   Int?
+  endYear     Int?
+  current     Boolean @default(false)
+
+  thesisTopic String?  @db.Text
+  advisor     String?
+  keyFindings String[]
+
+  createdAt DateTime @default(now())
+
+  @@index([profileId])
+}
+
+model ProjectFocus {
+  id        String              @id @default(cuid())
+  profileId String
+  profile   UserResearchProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String        @db.Text
+  status      ProjectStatus
+
+  // Research details
+  hypothesis      String?  @db.Text
+  methodology     String[]
+  expectedOutcome String?  @db.Text
+
+  // Timeline
+  startDate     DateTime?
+  targetEndDate DateTime?
+
+  // Related work
+  keyPapers      String[]
+  relatedQueries String[]
+
+  // Collaboration
+  collaborators String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([profileId, status])
+}
+
+model UserPreferences {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Search Preferences
+  preferredSources   String[]
+  preferredLLMs      String[]
+  defaultSearchDepth String   @default("standard")
+
+  // Content Preferences
+  openAccessOnly    Boolean  @default(false)
+  preferredJournals String[]
+  excludeJournals   String[]
+  minCitations      Int?
+  maxYearsOld       Int?
+
+  // Paper Preferences
+  preferReviews          Boolean @default(false)
+  preferOriginalResearch Boolean @default(true)
+  preferClinical         Boolean @default(false)
+
+  // Notification Preferences
+  emailDigest        Boolean @default(true)
+  digestFrequency    String  @default("weekly")
+  notifyNewPapers    Boolean @default(true)
+  notifyTeamActivity Boolean @default(true)
+
+  // Display Preferences
+  resultsPerPage  Int     @default(20)
+  showAbstracts   Boolean @default(true)
+  showKeyFindings Boolean @default(true)
+  compactView     Boolean @default(false)
+
+  // AI Preferences
+  questionSuggestions  Boolean @default(true)
+  proactiveSuggestions Boolean @default(true)
+  suggestionFrequency  String  @default("moderate")
+
+  // Privacy Preferences
+  profileVisibility String  @default("team")
+  shareActivityFeed Boolean @default(true)
+  shareKnowledge    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model LinkedInProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // LinkedIn URL
+  linkedinUrl String
+
+  // Scraped Data
+  headline String?
+  summary  String? @db.Text
+
+  // Experience
+  positions Position[]
+
+  // Education (duplicate but from LinkedIn)
+  educationRaw Json?
+
+  // Skills
+  skills       String[]
+  endorsements Json?
+
+  // Publications (from LinkedIn)
+  publications Json?
+
+  // Recommendations
+  recommendations Json?
+
+  // Network Size
+  connectionCount Int?
+  followerCount   Int?
+
+  // Scraping Metadata
+  lastScrapedAt  DateTime?
+  scrapingStatus ScrapingStatus @default(PENDING)
+  scrapingError  String?
+
+  // Raw data backup
+  rawData Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([scrapingStatus])
+}
+
+model Position {
+  id                String          @id @default(cuid())
+  linkedinProfileId String
+  linkedinProfile   LinkedInProfile @relation(fields: [linkedinProfileId], references: [id], onDelete: Cascade)
+
+  title       String
+  company     String
+  location    String?
+  description String? @db.Text
+
+  startDate DateTime?
+  endDate   DateTime?
+  current   Boolean   @default(false)
+
+  // Extracted insights
+  researchFocus String[]
+  techniques    String[]
+  achievements  String[]
+
+  createdAt DateTime @default(now())
+
+  @@index([linkedinProfileId])
+}
+
+model UserGoal {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type        GoalType
+  title       String
+  description String?  @db.Text
+
+  // Timeline
+  targetDate   DateTime?
+  reminderDate DateTime?
+
+  // Status
+  status   GoalStatus @default(NOT_STARTED)
+  progress Int        @default(0)
+
+  // Related entities
+  relatedQueries   String[]
+  relatedDocuments String[]
+  relatedPapers    String[]
+
+  // Milestones
+  milestones Milestone[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  completedAt DateTime?
+
+  @@index([userId, status, targetDate])
+  @@index([userId, type])
+}
+
+model Milestone {
+  id     String   @id @default(cuid())
+  goalId String
+  goal   UserGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?   @db.Text
+  targetDate  DateTime?
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([goalId])
+}
+
+model UserBehaviorProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Query Patterns (learned)
+  avgQueriesPerWeek Float    @default(0)
+  peakActivityHours Int[]
+  preferredDays     String[]
+
+  // Topic Evolution
+  topicHistory  Json
+  topicVelocity Float @default(0.5)
+
+  // Depth Preference
+  avgTimePerQuery  Float?
+  avgResultsViewed Float?
+  avgFeedbackRate  Float?
+
+  // Collaboration Style
+  soloResearcher     Boolean @default(true)
+  teamOriented       Boolean @default(false)
+  activeCollaborator Boolean @default(false)
+
+  // Learning Style
+  prefersReviews  Boolean @default(false)
+  prefersOriginal Boolean @default(true)
+  methodsFocused  Boolean @default(false)
+  resultsFocused  Boolean @default(true)
+
+  // Expertise Indicators
+  knownExpertIn  String[]
+  learningTopics String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }

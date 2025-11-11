@@ -1,18 +1,374 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════════
+   AMPLITUDE-INSPIRED DESIGN SYSTEM
+   Data-First Analytics Dashboard Theme
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Import Inter font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* CSS Custom Properties for Colors */
 :root {
-  --background: #ffffff;
-  --foreground: #09090b;
+  /* Background Colors */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #FAFAFA;
+  --bg-tertiary: #F4F4F5;
+  --bg-card: #FFFFFF;
+
+  /* Text Colors */
+  --text-primary: #18181B;
+  --text-secondary: #52525B;
+  --text-tertiary: #A1A1AA;
+  --text-inverse: #FFFFFF;
+
+  /* Border Colors */
+  --border-light: #F4F4F5;
+  --border-default: #E4E4E7;
+  --border-strong: #D4D4D8;
+
+  /* Brand Colors */
+  --primary: #8B5CF6;
+  --primary-hover: #7C3AED;
+  --primary-active: #6D28D9;
+
+  --secondary: #3B82F6;
+  --secondary-hover: #2563EB;
+  --secondary-active: #1D4ED8;
+
+  /* Chart Colors */
+  --chart-1: #8B5CF6;
+  --chart-2: #3B82F6;
+  --chart-3: #06B6D4;
+  --chart-4: #EC4899;
+  --chart-5: #F59E0B;
+  --chart-6: #10B981;
+  --chart-7: #EF4444;
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
+  --gradient-secondary: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
+  --gradient-accent: linear-gradient(135deg, #EC4899 0%, #8B5CF6 100%);
 }
 
+/* Dark mode variables (for future implementation) */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #09090b;
-    --foreground: #fafafa;
+    --bg-primary: #18181B;
+    --bg-secondary: #27272A;
+    --bg-tertiary: #3F3F46;
+    --bg-card: #27272A;
+
+    --text-primary: #FAFAFA;
+    --text-secondary: #A1A1AA;
+    --text-tertiary: #71717A;
+    --text-inverse: #18181B;
+
+    --border-light: #3F3F46;
+    --border-default: #52525B;
+    --border-strong: #71717A;
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════════════════════════ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
 body {
-  background-color: var(--background);
-  color: var(--foreground);
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+/* Typography Defaults */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+
+h1 {
+  font-size: 2.25rem; /* 36px */
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 1.875rem; /* 30px */
+}
+
+h3 {
+  font-size: 1.5rem; /* 24px */
+}
+
+h4 {
+  font-size: 1.25rem; /* 20px */
+}
+
+p {
+  color: var(--text-secondary);
+  line-height: 1.75;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+a:hover {
+  color: var(--primary-hover);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CUSTOM UTILITY CLASSES
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Card Shadows */
+.shadow-card {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+.shadow-card-hover {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.shadow-primary {
+  box-shadow: 0 10px 15px -3px rgb(139 92 246 / 0.1);
+}
+
+/* Gradient Text */
+.text-gradient-primary {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-secondary {
+  background: var(--gradient-secondary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Glass Morphism Effect */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Shimmer Loading Effect */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    #f4f4f5 0%,
+    #e4e4e7 50%,
+    #f4f4f5 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Focus Rings - Amplitude Style */
+.focus-ring-primary:focus {
+  outline: none;
+  ring: 4px;
+  ring-color: rgb(139 92 246 / 0.2);
+}
+
+.focus-ring-secondary:focus {
+  outline: none;
+  ring: 4px;
+  ring-color: rgb(59 130 246 / 0.2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   COMPONENT-SPECIFIC STYLES
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* Selection */
+::selection {
+  background-color: rgba(139, 92, 246, 0.2);
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Fade In */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 250ms ease-out;
+}
+
+/* Slide Up */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 250ms ease-out;
+}
+
+/* Scale In */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 150ms ease-out;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CHART STYLES (for Recharts, Chart.js, etc.)
+   ═══════════════════════════════════════════════════════════════════ */
+
+.recharts-wrapper {
+  font-family: 'Inter', sans-serif;
+}
+
+.recharts-cartesian-axis-tick {
+  font-size: 12px;
+  fill: var(--text-tertiary);
+}
+
+.recharts-legend-item-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.recharts-tooltip-wrapper {
+  outline: none;
+}
+
+.recharts-default-tooltip {
+  background-color: var(--bg-card) !important;
+  border: 1px solid var(--border-default) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+  padding: 12px !important;
+}
+
+.recharts-tooltip-label {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.recharts-tooltip-item {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE UTILITIES
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Container widths matching Amplitude */
+.container-dashboard {
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+@media (max-width: 768px) {
+  .container-dashboard {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PRINT STYLES
+   ═══════════════════════════════════════════════════════════════════ */
+
+@media print {
+  body {
+    background-color: white;
+  }
+
+  .no-print {
+    display: none !important;
+  }
 }
