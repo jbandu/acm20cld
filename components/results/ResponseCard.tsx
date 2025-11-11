@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { FeedbackButtons } from "./FeedbackButtons";
 
 interface Response {
@@ -12,6 +12,22 @@ interface Response {
   citationCount: number | null;
   metadata: any;
   createdAt: Date;
+}
+
+interface Paper {
+  type: string;
+  source: string;
+  id: string;
+  doi?: string;
+  title: string;
+  authors?: string[];
+  abstract?: string;
+  publication_date?: string;
+  journal?: string;
+  keywords?: string[];
+  mesh_terms?: string[];
+  url?: string;
+  citation_count?: number;
 }
 
 export function ResponseCard({
@@ -38,6 +54,20 @@ export function ResponseCard({
     claude: "Claude Analysis",
     gpt4: "GPT-4 Analysis",
   };
+
+  // Parse fullContent to check if it's JSON array of papers
+  const parsedPapers = useMemo(() => {
+    if (!response.fullContent) return null;
+    try {
+      const parsed = JSON.parse(response.fullContent);
+      if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].type === "paper") {
+        return parsed as Paper[];
+      }
+    } catch (e) {
+      // Not valid JSON or not a papers array
+    }
+    return null;
+  }, [response.fullContent]);
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
@@ -85,10 +115,101 @@ export function ResponseCard({
             </button>
 
             {expanded && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">
-                  {response.fullContent}
-                </pre>
+              <div className="mt-4 space-y-4">
+                {parsedPapers ? (
+                  // Display formatted papers
+                  parsedPapers.map((paper, index) => (
+                    <div
+                      key={paper.id || index}
+                      className="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-purple-300 transition-colors"
+                    >
+                      {/* Paper Title */}
+                      <h4 className="text-base font-semibold text-gray-900 mb-2">
+                        {paper.title}
+                      </h4>
+
+                      {/* Authors */}
+                      {paper.authors && paper.authors.length > 0 && (
+                        <p className="text-sm text-gray-600 mb-2">
+                          <span className="font-medium">Authors:</span>{" "}
+                          {paper.authors.slice(0, 5).join(", ")}
+                          {paper.authors.length > 5 && ` +${paper.authors.length - 5} more`}
+                        </p>
+                      )}
+
+                      {/* Journal and Date */}
+                      <div className="flex flex-wrap gap-2 text-xs text-gray-500 mb-2">
+                        {paper.journal && (
+                          <span className="px-2 py-1 bg-white rounded border border-gray-200">
+                            📖 {paper.journal}
+                          </span>
+                        )}
+                        {paper.publication_date && (
+                          <span className="px-2 py-1 bg-white rounded border border-gray-200">
+                            📅 {new Date(paper.publication_date).toLocaleDateString()}
+                          </span>
+                        )}
+                        {paper.citation_count !== undefined && paper.citation_count > 0 && (
+                          <span className="px-2 py-1 bg-blue-50 rounded border border-blue-200 text-blue-700">
+                            📊 {paper.citation_count} citations
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Abstract */}
+                      {paper.abstract && (
+                        <p className="text-sm text-gray-700 mb-3 line-clamp-3">
+                          {paper.abstract}
+                        </p>
+                      )}
+
+                      {/* Keywords/MeSH Terms */}
+                      {(paper.keywords || paper.mesh_terms) && (
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {(paper.keywords || paper.mesh_terms)?.slice(0, 5).map((keyword, i) => (
+                            <span
+                              key={i}
+                              className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs"
+                            >
+                              {keyword}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Links */}
+                      <div className="flex gap-2 mt-3">
+                        {paper.doi && (
+                          <a
+                            href={`https://doi.org/${paper.doi}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            DOI: {paper.doi}
+                          </a>
+                        )}
+                        {paper.url && (
+                          <a
+                            href={paper.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            View Full Text →
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  // Fallback to raw text display
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans">
+                      {response.fullContent}
+                    </pre>
+                  </div>
+                )}
               </div>
             )}
           </div>
