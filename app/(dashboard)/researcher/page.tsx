@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth/auth-config";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/db/prisma";
 import Link from "next/link";
 
 export default async function ResearcherDashboard() {
@@ -7,6 +8,16 @@ export default async function ResearcherDashboard() {
 
   if (!session) {
     redirect("/login");
+  }
+
+  // Check if user has completed onboarding
+  const profile = await prisma.userResearchProfile.findUnique({
+    where: { userId: session.user.id },
+    select: { onboardingComplete: true },
+  });
+
+  if (!profile?.onboardingComplete) {
+    redirect("/onboarding");
   }
 
   return (

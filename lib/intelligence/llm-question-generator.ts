@@ -24,10 +24,16 @@ interface UserContext {
     department?: string;
     interests: string[];
     expertise: string;
+    phdFocus?: string;
+    yearsInField?: number;
+    techniques?: string[];
+    computationalSkills?: string[];
+    highestDegree?: string;
   };
   recentQueries: Array<{ query: string; date: string }>;
   importantPapers: Array<{ title: string; concepts?: string[] }>;
-  projects: string[];
+  projects: Array<{ title: string; description?: string; status?: string }>;
+  goals: Array<{ type: string; title: string; targetDate?: string; daysUntil?: number }>;
   teamActivity: Array<{ researcher: string; topic: string }>;
   gaps: string[];
 }
@@ -67,11 +73,33 @@ export class LLMQuestionGenerator {
    * Gather comprehensive context about user
    */
   private async gatherUserContext(userId: string): Promise<UserContext> {
-    // User profile
+    // User profile with all related data
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        researchProfile: true,
+        researchProfile: {
+          include: {
+            currentProjectDetails: {
+              where: {
+                status: {
+                  in: ["PLANNING", "IN_PROGRESS", "ANALYZING"],
+                },
+              },
+              take: 5,
+            },
+          },
+        },
+        goals: {
+          where: {
+            status: {
+              in: ["NOT_STARTED", "IN_PROGRESS"],
+            },
+          },
+          orderBy: {
+            targetDate: "asc",
+          },
+          take: 5,
+        },
         queries: {
           orderBy: { createdAt: "desc" },
           take: 10,
@@ -111,8 +139,25 @@ export class LLMQuestionGenerator {
       })
       .slice(0, 5);
 
-    // Current projects
-    const projects = user.researchProfile?.currentProjects || [];
+    // Current projects from ProjectFocus table
+    const projects = user.researchProfile?.currentProjectDetails?.map((p) => ({
+      title: p.title,
+      description: p.description,
+      status: p.status,
+    })) || [];
+
+    // Upcoming goals with deadlines
+    const goals = user.goals.map((g) => {
+      const daysUntil = g.targetDate
+        ? Math.ceil((g.targetDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+        : undefined;
+      return {
+        type: g.type,
+        title: g.title,
+        targetDate: g.targetDate?.toISOString().split("T")[0],
+        daysUntil,
+      };
+    });
 
     // Team activity
     const teamActivity = await this.getTeamActivity(user.department || "");
@@ -125,11 +170,17 @@ export class LLMQuestionGenerator {
         name: user.name,
         department: user.department || "General",
         interests: user.researchProfile?.primaryInterests || [],
-        expertise: user.researchProfile?.expertiseLevel || "INTERMEDIATE",
+        expertise: user.researchProfile?.expertiseLevel || "STUDENT",
+        phdFocus: user.researchProfile?.phdFocus || undefined,
+        yearsInField: user.researchProfile?.yearsInField || undefined,
+        techniques: user.researchProfile?.techniques || [],
+        computationalSkills: user.researchProfile?.computationalSkills || [],
+        highestDegree: user.researchProfile?.highestDegree || undefined,
       },
       recentQueries,
       importantPapers,
       projects,
+      goals,
       teamActivity,
       gaps,
     };
@@ -139,51 +190,59 @@ export class LLMQuestionGenerator {
    * Build comprehensive prompt for Claude
    */
   private buildPrompt(context: UserContext): string {
-    return `You are an AI research advisor for a cancer biology researcher at ACM Research Platform.
+    return `You are an AI research advisor for a researcher at ACM Research Platform.
 
 USER PROFILE:
 - Name: ${context.profile.name}
 - Department: ${context.profile.department}
-- Expertise Level: ${context.profile.expertise}
-- Research Interests: ${context.profile.interests.join(", ") || "Not specified yet"}
+- Highest Degree: ${context.profile.highestDegree || "Not specified"}
+- Expertise Level: ${context.profile.expertise}${context.profile.yearsInField ? `\n- Years in Field: ${context.profile.yearsInField}` : ""}${context.profile.phdFocus ? `\n- PhD Research Focus: ${context.profile.phdFocus}` : ""}
+- Primary Research Interests: ${context.profile.interests.join(", ") || "Not specified yet"}${context.profile.techniques?.length ? `\n- Laboratory Techniques: ${context.profile.techniques.join(", ")}` : ""}${context.profile.computationalSkills?.length ? `\n- Computational Skills: ${context.profile.computationalSkills.join(", ")}` : ""}
 
-RECENT RESEARCH ACTIVITY (Last 7 days):
+RECENT RESEARCH ACTIVITY (Last 10 queries):
 ${context.recentQueries.map((q) => `- "${q.query}" (${q.date})`).join("\n") || "No recent queries"}
 
 PAPERS MARKED AS IMPORTANT:
 ${context.importantPapers.map((p) => `- ${p.title}${p.concepts?.length ? ` [Concepts: ${p.concepts.join(", ")}]` : ""}`).join("\n") || "None yet"}
 
-CURRENT PROJECTS:
-${context.projects.join(", ") || "No projects specified"}
+CURRENT RESEARCH PROJECTS:
+${context.projects.length > 0 ? context.projects.map((p) => `- ${p.title}${p.description ? `: ${p.description.substring(0, 100)}` : ""} [Status: ${p.status}]`).join("\n") : "No active projects specified"}
 
-TEAM RESEARCH ACTIVITY:
+UPCOMING GOALS & DEADLINES:
+${context.goals.length > 0 ? context.goals.map((g) => `- [${g.type}] ${g.title}${g.daysUntil !== undefined ? ` (${g.daysUntil > 0 ? `in ${g.daysUntil} days` : g.daysUntil === 0 ? "TODAY!" : `${Math.abs(g.daysUntil)} days overdue`})` : ""}`).join("\n") : "No upcoming goals"}
+
+TEAM RESEARCH ACTIVITY (Same department):
 ${context.teamActivity.length > 0 ? context.teamActivity.map((a) => `- ${a.researcher}: ${a.topic}`).join("\n") : "No team activity data"}
 
-KNOWLEDGE GAPS (Areas not explored):
+KNOWLEDGE GAPS (Areas not yet explored):
 ${context.gaps.join(", ") || "No gaps identified"}
 
 INSTRUCTIONS:
 Generate 10 highly relevant research questions this person should explore next. Make them:
-1. Highly relevant to their current research trajectory
+1. Highly relevant to their current research trajectory${context.profile.phdFocus ? ` and PhD focus (${context.profile.phdFocus})` : ""}
 2. Actionable (can be researched using available tools)
-3. Progressive (build on existing knowledge)
+3. Progressive (build on existing knowledge and expertise)
 4. Diverse (cover different aspects and question types)
-5. Timely (consider current trends in the field)
-6. Valuable (high potential to advance their research)
+5. Timely (consider current trends${context.goals.length > 0 ? ` and upcoming deadlines` : ""})
+6. Valuable (high potential to advance their research${context.projects.length > 0 ? " projects" : ""})${context.goals.some((g) => g.daysUntil !== undefined && g.daysUntil <= 30 && g.daysUntil >= 0) ? `\n7. URGENT: Prioritize questions that help with upcoming goals/deadlines (within 30 days)` : ""}
 
 Mix these question types:
 - CONTINUATION: Natural follow-ups to recent work
 - DEEPENING: Dig into specific mechanisms or details
 - BRIDGING: Connect different research areas
 - TREND: What's new and emerging in the field
-- PRACTICAL: Clinical/translational applications
+- PRACTICAL: Clinical/translational applications${context.profile.techniques?.length ? ` (relevant to their techniques: ${context.profile.techniques?.join(", ")})` : ""}
 - GAP: Unexplored but relevant areas
 - COMPARISON: Compare approaches or concepts
 - EXPLORATION: New promising directions
 
 For each question, consider:
-- The researcher's expertise level (${context.profile.expertise})
-- Their recent query patterns
+- The researcher's expertise level (${context.profile.expertise})${context.profile.yearsInField ? ` with ${context.profile.yearsInField} years experience` : ""}
+- Their recent query patterns and research trajectory
+- Active research projects and their current status
+- Upcoming goals and deadlines (especially urgent ones)
+- Their laboratory skills${context.profile.techniques?.length ? ` (${context.profile.techniques.slice(0, 3).join(", ")})` : ""}
+- Their computational abilities${context.profile.computationalSkills?.length ? ` (${context.profile.computationalSkills.slice(0, 3).join(", ")})` : ""}
 - Team interests and potential collaborations
 - Identified knowledge gaps
 

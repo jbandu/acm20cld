@@ -82,19 +82,31 @@ export class CollaborativeQuestionGenerator {
 
     const userQueryTexts = userQueries.map((q) => q.originalQuery);
 
-    // Get all other researchers in same department
+    // Get all other researchers in same department or institution
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { department: true },
+      select: { department: true, institution: true },
     });
 
     const potentialSimilar = await prisma.user.findMany({
       where: {
         id: { not: userId },
-        department: user?.department,
+        OR: [
+          { department: user?.department },
+          { institution: user?.institution },
+        ],
       },
       include: {
-        researchProfile: true,
+        researchProfile: {
+          select: {
+            primaryInterests: true,
+            secondaryInterests: true,
+            researchAreas: true,
+            expertiseLevel: true,
+            techniques: true,
+            computationalSkills: true,
+          },
+        },
         queries: {
           where: { status: "COMPLETED" },
           orderBy: { createdAt: "desc" },
@@ -106,6 +118,10 @@ export class CollaborativeQuestionGenerator {
 
     // Calculate similarity scores
     const similarities: SimilarResearcher[] = [];
+
+    // Get user's research areas for additional matching
+    const userResearchAreas = new Set(userProfile?.researchAreas || []);
+    const userTechniques = new Set(userProfile?.techniques || []);
 
     for (const other of potentialSimilar) {
       if (other.queries.length === 0) continue;
@@ -120,6 +136,24 @@ export class CollaborativeQuestionGenerator {
       const interestSimilarity =
         sharedInterests.length / Math.max(userInterests.size, otherInterests.size, 1);
 
+      // Research area overlap
+      const otherResearchAreas = new Set(other.researchProfile?.researchAreas || []);
+      const sharedAreas = [...userResearchAreas].filter((a) => otherResearchAreas.has(a));
+      const areaSimilarity =
+        sharedAreas.length / Math.max(userResearchAreas.size, otherResearchAreas.size, 1);
+
+      // Technique overlap (indicates methodological similarity)
+      const otherTechniques = new Set(other.researchProfile?.techniques || []);
+      const sharedTechniques = [...userTechniques].filter((t) => otherTechniques.has(t));
+      const techniqueSimilarity =
+        userTechniques.size > 0 && otherTechniques.size > 0
+          ? sharedTechniques.length / Math.max(userTechniques.size, otherTechniques.size, 1)
+          : 0;
+
+      // Expertise level similarity (prefer similar levels for better question relevance)
+      const expertiseSimilarity =
+        userProfile?.expertiseLevel === other.researchProfile?.expertiseLevel ? 0.5 : 0;
+
       // Query similarity (using embeddings)
       const otherQueryTexts = other.queries.map((q) => q.originalQuery);
       const querySimilarity = await this.calculateQuerySimilarity(
@@ -127,8 +161,13 @@ export class CollaborativeQuestionGenerator {
         otherQueryTexts
       );
 
-      // Combined similarity
-      const overallSimilarity = interestSimilarity * 0.4 + querySimilarity * 0.6;
+      // Combined similarity (weighted average)
+      const overallSimilarity =
+        interestSimilarity * 0.25 +
+        areaSimilarity * 0.25 +
+        querySimilarity * 0.3 +
+        techniqueSimilarity * 0.1 +
+        expertiseSimilarity * 0.1;
 
       if (overallSimilarity > 0.3) {
         // Threshold for similarity
