@@ -23,21 +23,26 @@ export default async function ProfileEditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-100">
-      <header className="bg-white border-b border-neutral-200 shadow-sm">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, #f8f9fa 0%, #e9ecef 100%)' }}>
+      <header className="bg-white border-b-2 border-purple-200 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
               <Link
                 href="/researcher/profile"
-                className="text-sm text-neutral-600 hover:text-primary-600 mb-1 block transition-colors inline-flex items-center gap-1"
+                className="text-sm text-purple-600 hover:text-purple-800 mb-2 block transition-colors inline-flex items-center gap-1 font-medium"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
                 Back to Profile
               </Link>
-              <h1 className="text-2xl font-bold text-neutral-900">Edit Profile</h1>
+              <h1 className="text-2xl font-bold" style={{
+                background: 'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>Edit Profile</h1>
             </div>
           </div>
         </div>

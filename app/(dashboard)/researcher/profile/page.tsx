@@ -22,28 +22,44 @@ export default async function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-100">
-      <header className="bg-white border-b border-neutral-200 shadow-sm">
+    <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, #f8f9fa 0%, #e9ecef 100%)' }}>
+      <header className="bg-white border-b-2 border-purple-200 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
               <Link
                 href="/researcher"
-                className="text-sm text-neutral-600 hover:text-primary-600 mb-1 block transition-colors inline-flex items-center gap-1"
+                className="text-sm text-purple-600 hover:text-purple-800 mb-2 block transition-colors inline-flex items-center gap-1 font-medium"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
                 Back to Dashboard
               </Link>
-              <h1 className="text-2xl font-bold text-neutral-900">My Profile</h1>
+              <h1 className="text-2xl font-bold" style={{
+                background: 'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>My Profile</h1>
             </div>
-            <Link
-              href="/researcher/profile/edit"
-              className="px-4 py-2 bg-gradient-primary text-white rounded-lg hover:shadow-primary transition-all duration-200 font-medium"
-            >
-              Edit Profile
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/researcher/profile/edit"
+                className="px-5 py-2.5 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                style={{background: 'linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%)'}}
+              >
+                Edit Profile
+              </Link>
+              <form action="/api/auth/logout" method="POST">
+                <button
+                  type="submit"
+                  className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border-2 border-gray-300 rounded-xl hover:bg-gray-50 hover:border-purple-400 transition-all"
+                >
+                  Logout
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </header>
