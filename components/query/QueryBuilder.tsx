@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SuggestedQuestions } from "./SuggestedQuestions";
+import { ReviewQueryModal } from "./ReviewQueryModal";
 
 export function QueryBuilder() {
   const router = useRouter();
@@ -11,6 +12,7 @@ export function QueryBuilder() {
   const [llms, setLlms] = useState<string[]>(["claude"]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showReviewModal, setShowReviewModal] = useState(false);
 
   // Advanced filters
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -47,7 +49,8 @@ export function QueryBuilder() {
     );
   };
 
-  async function handleSubmit(e: React.FormEvent) {
+  // Show review modal instead of directly submitting
+  function handleReviewQuery(e: React.FormEvent) {
     e.preventDefault();
     setError("");
 
@@ -66,7 +69,14 @@ export function QueryBuilder() {
       return;
     }
 
+    // Show review modal
+    setShowReviewModal(true);
+  }
+
+  // Actual submission after review
+  async function handleSubmitQuery(reviewedData: any) {
     setLoading(true);
+    setError("");
 
     try {
       const response = await fetch("/api/query", {
@@ -74,19 +84,7 @@ export function QueryBuilder() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          query,
-          sources,
-          llms,
-          maxResults,
-          filters: {
-            dateFrom: dateFrom || undefined,
-            dateTo: dateTo || undefined,
-            minCitations: minCitations || undefined,
-            publicationType: publicationType !== "all" ? publicationType : undefined,
-            openAccessOnly,
-          },
-        }),
+        body: JSON.stringify(reviewedData),
       });
 
       if (!response.ok) {
@@ -99,12 +97,13 @@ export function QueryBuilder() {
     } catch (err: any) {
       setError(err.message || "An error occurred");
       setLoading(false);
+      setShowReviewModal(false);
     }
   }
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleReviewQuery} className="space-y-8">
         {/* Query Input */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
           <label htmlFor="query" className="block text-base font-semibold text-gray-900 mb-3">
@@ -354,10 +353,31 @@ export function QueryBuilder() {
               Processing Query...
             </span>
           ) : (
-            "Submit Research Query"
+            "Review Query"
           )}
         </button>
       </form>
+
+      {/* Review Modal */}
+      <ReviewQueryModal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        queryData={{
+          query,
+          sources,
+          llms,
+          maxResults,
+          filters: {
+            dateFrom: dateFrom || undefined,
+            dateTo: dateTo || undefined,
+            minCitations: minCitations || undefined,
+            publicationType: publicationType !== "all" ? publicationType : undefined,
+            openAccessOnly,
+          },
+        }}
+        onSubmit={handleSubmitQuery}
+        loading={loading}
+      />
     </div>
   );
 }
