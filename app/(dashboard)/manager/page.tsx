@@ -5,8 +5,13 @@ import Link from "next/link";
 export default async function ManagerDashboard() {
   const session = await auth();
 
-  if (!session || session.user?.role !== "MANAGER") {
+  if (!session) {
     redirect("/");
+  }
+
+  // Only MANAGER and ADMIN roles can access this page
+  if (session.user?.role !== "MANAGER" && session.user?.role !== "ADMIN") {
+    redirect("/researcher");
   }
 
   return (
