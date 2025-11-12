@@ -27,6 +27,13 @@ interface DataElement {
   required?: boolean;
 }
 
+interface ServicePayload {
+  serviceName: string;
+  type: "llm" | "datasource";
+  payload: string;
+  description: string;
+}
+
 interface ReviewQueryModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -42,6 +49,9 @@ export function ReviewQueryModal({
   onSubmit,
   loading,
 }: ReviewQueryModalProps) {
+  const [showPayloads, setShowPayloads] = useState(false);
+  const [expandedPayloads, setExpandedPayloads] = useState<Set<string>>(new Set());
+
   // Build data elements from query data
   const buildDataElements = (): DataElement[] => {
     const elements: DataElement[] = [];
@@ -159,6 +169,74 @@ export function ReviewQueryModal({
     );
   };
 
+  const togglePayloadExpansion = (serviceName: string) => {
+    setExpandedPayloads((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(serviceName)) {
+        newSet.delete(serviceName);
+      } else {
+        newSet.add(serviceName);
+      }
+      return newSet;
+    });
+  };
+
+  const buildServicePayloads = (): ServicePayload[] => {
+    const payloads: ServicePayload[] = [];
+    const userContext = buildUserContext();
+    const orgContext = buildOrganizationContext();
+
+    // Build LLM prompts
+    queryData.llms.forEach((llm) => {
+      let payload = "";
+      let description = "";
+
+      if (llm === "claude") {
+        payload = buildClaudePrompt(queryData, userContext, orgContext);
+        description = "Full prompt sent to Claude API (Anthropic)";
+      } else if (llm === "gpt4") {
+        payload = buildGPT4Prompt(queryData, userContext, orgContext);
+        description = "Full prompt sent to GPT-4 API (OpenAI)";
+      } else if (llm === "ollama") {
+        payload = buildOllamaPrompt(queryData, userContext, orgContext);
+        description = "Full prompt sent to Ollama (Local)";
+      }
+
+      payloads.push({
+        serviceName: getLLMName(llm),
+        type: "llm",
+        payload,
+        description,
+      });
+    });
+
+    // Build data source queries
+    queryData.sources.forEach((source) => {
+      let payload = "";
+      let description = "";
+
+      if (source === "openalex") {
+        payload = buildOpenAlexQuery(queryData);
+        description = "API query string sent to OpenAlex";
+      } else if (source === "pubmed") {
+        payload = buildPubMedQuery(queryData);
+        description = "API query string sent to PubMed";
+      } else if (source === "patents") {
+        payload = buildPatentsQuery(queryData);
+        description = "API query string sent to Patents API";
+      }
+
+      payloads.push({
+        serviceName: getSourceName(source),
+        type: "datasource",
+        payload,
+        description,
+      });
+    });
+
+    return payloads;
+  };
+
   const handleSubmit = () => {
     // Build modified query data based on selected elements
     const modifiedData: QueryData = {
@@ -201,6 +279,8 @@ export function ReviewQueryModal({
   }, {} as Record<string, DataElement[]>);
 
   if (!isOpen) return null;
+
+  const servicePayloads = buildServicePayloads();
 
   return (
     <AnimatePresence>
@@ -251,60 +331,147 @@ export function ReviewQueryModal({
                 </div>
               </div>
             </div>
+
+            {/* View Toggle */}
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => setShowPayloads(false)}
+                disabled={loading}
+                className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all ${
+                  !showPayloads
+                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                Data Summary
+              </button>
+              <button
+                onClick={() => setShowPayloads(true)}
+                disabled={loading}
+                className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all ${
+                  showPayloads
+                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                Full Payloads
+              </button>
+            </div>
           </div>
 
-          {/* Data Elements by Category */}
-          <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
-            {Object.entries(groupedElements).map(([category, elements]) => (
-              <div key={category} className="bg-gray-50 rounded-xl p-5 border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">{category}</h3>
-                <div className="space-y-3">
-                  {elements.map((elem) => (
-                    <div
-                      key={elem.id}
-                      className={`bg-white rounded-lg p-4 border-2 transition-all ${
-                        elem.included
-                          ? "border-green-300 bg-green-50/30"
-                          : "border-gray-200 opacity-60"
-                      }`}
-                    >
-                      <div className="flex items-start gap-4">
-                        <input
-                          type="checkbox"
-                          checked={elem.included}
-                          onChange={() => toggleElement(elem.id)}
-                          disabled={elem.required || loading}
-                          className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-0.5 flex-shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium text-gray-900">{elem.label}</span>
-                            {elem.required && (
-                              <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-semibold">
-                                Required
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-gray-700 mb-2 break-words">{elem.value}</p>
-                          <div className="flex flex-wrap gap-1">
-                            <span className="text-xs text-gray-500 mr-1">Sent to:</span>
-                            {elem.destination.map((dest, idx) => (
-                              <span
-                                key={idx}
-                                className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full"
-                              >
-                                {dest}
-                              </span>
-                            ))}
+          {/* Content */}
+          {!showPayloads ? (
+            // Data Summary View
+            <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
+              {Object.entries(groupedElements).map(([category, elements]) => (
+                <div key={category} className="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">{category}</h3>
+                  <div className="space-y-3">
+                    {elements.map((elem) => (
+                      <div
+                        key={elem.id}
+                        className={`bg-white rounded-lg p-4 border-2 transition-all ${
+                          elem.included
+                            ? "border-green-300 bg-green-50/30"
+                            : "border-gray-200 opacity-60"
+                        }`}
+                      >
+                        <div className="flex items-start gap-4">
+                          <input
+                            type="checkbox"
+                            checked={elem.included}
+                            onChange={() => toggleElement(elem.id)}
+                            disabled={elem.required || loading}
+                            className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded mt-0.5 flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium text-gray-900">{elem.label}</span>
+                              {elem.required && (
+                                <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-semibold">
+                                  Required
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-700 mb-2 break-words">{elem.value}</p>
+                            <div className="flex flex-wrap gap-1">
+                              <span className="text-xs text-gray-500 mr-1">Sent to:</span>
+                              {elem.destination.map((dest, idx) => (
+                                <span
+                                  key={idx}
+                                  className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full"
+                                >
+                                  {dest}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            // Full Payloads View
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  <div className="text-sm text-yellow-900">
+                    <strong>Full Transparency:</strong> Below are the exact prompts and queries being sent to each external service. Click to expand and review.
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+
+              {servicePayloads.map((payload) => (
+                <div key={payload.serviceName} className="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden">
+                  <button
+                    onClick={() => togglePayloadExpansion(payload.serviceName)}
+                    className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        payload.type === "llm"
+                          ? "bg-purple-100 text-purple-700"
+                          : "bg-blue-100 text-blue-700"
+                      }`}>
+                        {payload.type === "llm" ? "LLM" : "Data Source"}
+                      </div>
+                      <div className="text-left">
+                        <h4 className="font-semibold text-gray-900">{payload.serviceName}</h4>
+                        <p className="text-sm text-gray-600">{payload.description}</p>
+                      </div>
+                    </div>
+                    <svg
+                      className={`w-5 h-5 text-gray-500 transition-transform ${
+                        expandedPayloads.has(payload.serviceName) ? "rotate-180" : ""
+                      }`}
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {expandedPayloads.has(payload.serviceName) && (
+                    <div className="px-5 pb-5">
+                      <div className="bg-black rounded-lg p-4 font-mono text-sm overflow-x-auto">
+                        <pre className="text-green-400 whitespace-pre-wrap break-words">
+                          {payload.payload}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex gap-4 mt-8 pt-6 border-t border-gray-200">
@@ -377,4 +544,262 @@ function getLLMName(llmId: string): string {
     ollama: "Ollama (Local)",
   };
   return names[llmId] || llmId;
+}
+
+// Context building functions
+function buildUserContext(): string {
+  // Placeholder for user/researcher context
+  // In production, this would pull from user profile, preferences, and history
+  return `
+=== USER CONTEXT ===
+Organization: ACM Biolabs
+Researcher: [Current User Name]
+Department: [Research Department]
+Research Focus: [User's primary research areas]
+
+NOTE: Future enhancements will include:
+- User's research history and preferences
+- Previously saved search patterns
+- Preferred data sources and citation styles
+- Custom ontology preferences
+- Collaboration network context
+  `.trim();
+}
+
+function buildOrganizationContext(): string {
+  // Placeholder for organization context
+  return `
+=== ORGANIZATION CONTEXT ===
+Organization: ACM Biolabs
+Institution Type: Research Laboratory
+Data Access Level: Premium
+Available Integrations: OpenAlex, PubMed, Patents API, Claude, GPT-4, Ollama
+
+NOTE: Future enhancements will include:
+- Organization-wide knowledge graph
+- Shared ontologies and taxonomies
+- Institutional research priorities
+- Compliance and data governance policies
+- Custom field mappings
+  `.trim();
+}
+
+// LLM prompt builders
+function buildClaudePrompt(queryData: QueryData, userContext: string, orgContext: string): string {
+  const filterText = buildFilterDescription(queryData.filters);
+
+  return `${userContext}
+
+${orgContext}
+
+=== RESEARCH QUERY ===
+Query: "${queryData.query}"
+Maximum Results: ${queryData.maxResults}
+${filterText ? `Filters: ${filterText}` : ''}
+
+=== YOUR TASK ===
+You are an AI research assistant helping researchers at ACM Biolabs analyze scientific literature and data. Your task is to:
+
+1. Analyze the research query in the context of the user's research focus and organization's priorities
+2. Review the data retrieved from the following sources: ${queryData.sources.map(s => getSourceName(s)).join(", ")}
+3. Synthesize findings across all sources
+4. Identify key patterns, trends, and insights
+5. Highlight any contradictions or gaps in the literature
+6. Suggest potential research directions or follow-up queries
+
+NOTE: Additional context will be included in future versions:
+- Knowledge graph connections (related concepts, entities, and relationships)
+- Organization's ontology mappings
+- User's personal research notes and annotations
+- Historical query results and feedback
+- Collaborative filtering from similar researchers
+
+Please provide a comprehensive analysis that helps the researcher understand the landscape of their query.`;
+}
+
+function buildGPT4Prompt(queryData: QueryData, userContext: string, orgContext: string): string {
+  const filterText = buildFilterDescription(queryData.filters);
+
+  return `${userContext}
+
+${orgContext}
+
+=== RESEARCH QUERY ===
+Query: "${queryData.query}"
+Maximum Results: ${queryData.maxResults}
+${filterText ? `Filters: ${filterText}` : ''}
+
+=== YOUR ROLE ===
+You are a scientific research assistant for ACM Biolabs. Analyze the provided research data and deliver insights that help advance the researcher's work.
+
+Your analysis should include:
+- Summary of key findings across all data sources (${queryData.sources.map(s => getSourceName(s)).join(", ")})
+- Identification of most relevant papers, patents, or datasets
+- Analysis of methodologies and approaches used in the literature
+- Potential applications and implications for the researcher's work
+- Recommendations for further investigation
+
+NOTE: Future versions will incorporate:
+- Dynamic knowledge graph context
+- Organization-specific ontologies and terminologies
+- User preference learning
+- Cross-reference with internal research database
+- Real-time collaboration signals
+
+Provide actionable insights that support evidence-based research decisions.`;
+}
+
+function buildOllamaPrompt(queryData: QueryData, userContext: string, orgContext: string): string {
+  const filterText = buildFilterDescription(queryData.filters);
+
+  return `${userContext}
+
+${orgContext}
+
+=== RESEARCH QUERY ===
+Query: "${queryData.query}"
+Maximum Results: ${queryData.maxResults}
+${filterText ? `Filters: ${filterText}` : ''}
+
+=== ANALYSIS REQUEST ===
+Analyze the research data from: ${queryData.sources.map(s => getSourceName(s)).join(", ")}
+
+Provide:
+1. Overview of findings
+2. Key themes and patterns
+3. Notable publications or datasets
+4. Research gaps or opportunities
+5. Next steps recommendations
+
+NOTE: Enhanced context coming soon:
+- Knowledge graph integration
+- Custom organization ontologies
+- User research profile
+- Historical search patterns
+- Team collaboration context
+
+Generate a concise, actionable research summary.`;
+}
+
+// Data source query builders
+function buildOpenAlexQuery(queryData: QueryData): string {
+  const filters = queryData.filters;
+  let query = `GET https://api.openalex.org/works?search=${encodeURIComponent(queryData.query)}`;
+
+  const params: string[] = [];
+  params.push(`per-page=${queryData.maxResults}`);
+
+  if (filters.dateFrom || filters.dateTo) {
+    const fromYear = filters.dateFrom ? new Date(filters.dateFrom).getFullYear() : '*';
+    const toYear = filters.dateTo ? new Date(filters.dateTo).getFullYear() : '*';
+    params.push(`filter=publication_year:${fromYear}-${toYear}`);
+  }
+
+  if (filters.minCitations) {
+    params.push(`filter=cited_by_count:>${filters.minCitations}`);
+  }
+
+  if (filters.openAccessOnly) {
+    params.push(`filter=is_oa:true`);
+  }
+
+  if (filters.publicationType && filters.publicationType !== 'all') {
+    params.push(`filter=type:${filters.publicationType}`);
+  }
+
+  if (params.length > 0) {
+    query += '&' + params.join('&');
+  }
+
+  return `${query}
+
+NOTE: Future enhancements will include:
+- Semantic search using knowledge graph embeddings
+- Organization-specific field mappings
+- Custom relevance scoring based on user preferences
+- Automatic concept expansion from ontology
+- Integration with internal citation database`;
+}
+
+function buildPubMedQuery(queryData: QueryData): string {
+  const filters = queryData.filters;
+  let searchTerms = queryData.query;
+
+  const constraints: string[] = [];
+
+  if (filters.dateFrom || filters.dateTo) {
+    const from = filters.dateFrom || '1900/01/01';
+    const to = filters.dateTo || new Date().toISOString().split('T')[0];
+    constraints.push(`("${from.replace(/-/g, '/')}"[Date - Publication] : "${to.replace(/-/g, '/')}"[Date - Publication])`);
+  }
+
+  if (filters.publicationType && filters.publicationType !== 'all') {
+    constraints.push(`${filters.publicationType}[Publication Type]`);
+  }
+
+  if (filters.openAccessOnly) {
+    constraints.push(`free full text[filter]`);
+  }
+
+  let query = searchTerms;
+  if (constraints.length > 0) {
+    query += ' AND ' + constraints.join(' AND ');
+  }
+
+  return `GET https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi
+?db=pubmed
+&term=${encodeURIComponent(query)}
+&retmax=${queryData.maxResults}
+&retmode=json
+
+NOTE: Future context additions:
+- MeSH term expansion from custom medical ontology
+- Author disambiguation using knowledge graph
+- Journal impact factor filtering based on org preferences
+- Automatic clinical trial phase detection
+- Cross-reference with internal lab publications
+- Citation network analysis integration`;
+}
+
+function buildPatentsQuery(queryData: QueryData): string {
+  const filters = queryData.filters;
+  let query = `GET https://api.patents.example.com/search?q=${encodeURIComponent(queryData.query)}`;
+
+  const params: string[] = [];
+  params.push(`limit=${queryData.maxResults}`);
+
+  if (filters.dateFrom) {
+    params.push(`filing_date_from=${filters.dateFrom}`);
+  }
+
+  if (filters.dateTo) {
+    params.push(`filing_date_to=${filters.dateTo}`);
+  }
+
+  if (params.length > 0) {
+    query += '&' + params.join('&');
+  }
+
+  return `${query}
+
+NOTE: Future intelligence features:
+- Patent classification mapping to organization taxonomy
+- Inventor network analysis from knowledge graph
+- Technology trend detection
+- Competitive landscape analysis
+- Prior art suggestions from internal R&D database
+- Automated claim analysis and comparison
+- Integration with IP management system`;
+}
+
+function buildFilterDescription(filters: QueryData['filters']): string {
+  const parts: string[] = [];
+
+  if (filters.dateFrom) parts.push(`from ${filters.dateFrom}`);
+  if (filters.dateTo) parts.push(`to ${filters.dateTo}`);
+  if (filters.minCitations) parts.push(`min citations: ${filters.minCitations}`);
+  if (filters.publicationType && filters.publicationType !== 'all') parts.push(`type: ${filters.publicationType}`);
+  if (filters.openAccessOnly) parts.push(`open access only`);
+
+  return parts.join(', ');
 }
