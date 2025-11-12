@@ -7,7 +7,7 @@ export default async function KnowledgeContributionsPage() {
   const session = await auth();
 
   if (!session || (session.user.role !== "MANAGER" && session.user.role !== "ADMIN")) {
-    redirect("/login");
+    redirect("/");
   }
 
   const contributions = await prisma.knowledgeContribution.findMany({

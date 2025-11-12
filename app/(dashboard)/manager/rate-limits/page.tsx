@@ -7,7 +7,7 @@ export default async function RateLimitsPage() {
   const session = await auth();
 
   if (!session) {
-    redirect("/login");
+    redirect("/");
   }
 
   // Check if user has manager or admin role

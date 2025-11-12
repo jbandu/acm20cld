@@ -7,7 +7,7 @@ export default async function CEODashboardPage() {
   const session = await auth();
 
   if (!session) {
-    redirect("/login");
+    redirect("/");
   }
 
   // Fetch user with role check

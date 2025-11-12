@@ -6,7 +6,7 @@ export default async function SystemAdminPage() {
   const session = await auth();
 
   if (!session || session.user.role !== "ADMIN") {
-    redirect("/login");
+    redirect("/");
   }
 
   return (

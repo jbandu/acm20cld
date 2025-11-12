@@ -6,7 +6,7 @@ export default async function ManagerDashboard() {
   const session = await auth();
 
   if (!session || session.user?.role !== "MANAGER") {
-    redirect("/login");
+    redirect("/");
   }
 
   return (

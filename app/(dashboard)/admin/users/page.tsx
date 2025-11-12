@@ -6,7 +6,7 @@ export default async function AdminUsersPage() {
   const session = await auth();
 
   if (!session) {
-    redirect("/login");
+    redirect("/");
   }
 
   // Check if user is admin/manager

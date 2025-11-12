@@ -15,7 +15,7 @@ export default async function QueryResultsPage({
   const session = await auth();
 
   if (!session) {
-    redirect("/login");
+    redirect("/");
   }
 
   const { id } = await params;

@@ -7,7 +7,7 @@ export default async function SourcesAdminPage() {
   const session = await auth();
 
   if (!session || session.user.role !== "ADMIN") {
-    redirect("/login");
+    redirect("/");
   }
 
   const sources = await prisma.dataSource.findMany({

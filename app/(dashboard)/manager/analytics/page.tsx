@@ -7,7 +7,7 @@ export default async function AnalyticsPage() {
   const session = await auth();
 
   if (!session || (session.user.role !== "MANAGER" && session.user.role !== "ADMIN")) {
-    redirect("/login");
+    redirect("/");
   }
 
   // Get analytics data

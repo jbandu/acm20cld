@@ -7,7 +7,7 @@ export default async function TeamActivityPage() {
   const session = await auth();
 
   if (!session || (session.user.role !== "MANAGER" && session.user.role !== "ADMIN")) {
-    redirect("/login");
+    redirect("/");
   }
 
   // Get all users and their recent queries

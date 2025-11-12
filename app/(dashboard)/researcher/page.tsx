@@ -8,18 +8,11 @@ export default async function ResearcherDashboard() {
   const session = await auth();
 
   if (!session) {
-    redirect("/login");
+    redirect("/");
   }
 
-  // Check if user has completed onboarding
-  const profile = await prisma.userResearchProfile.findUnique({
-    where: { userId: session.user.id },
-    select: { onboardingComplete: true },
-  });
-
-  if (!profile?.onboardingComplete) {
-    redirect("/onboarding");
-  }
+  // Optional: Check if user has completed onboarding (now handled by WelcomeFlow)
+  // We no longer force users through onboarding - they can skip it
 
   // Fetch user role to show CEO dashboard card if applicable
   const user = await prisma.user.findUnique({

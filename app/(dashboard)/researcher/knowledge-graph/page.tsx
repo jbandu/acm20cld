@@ -11,14 +11,6 @@ async function KnowledgeGraphContent() {
     redirect("/");
   }
 
-  // Check if user has completed onboarding
-  const profile = await prisma.userResearchProfile.findUnique({
-    where: { userId: session.user.id },
-    select: { onboardingComplete: true },
-  });
-
-  if (!profile?.onboardingComplete) {
-    redirect("/onboarding");
   }
 
   // Fetch fresh user data from database
