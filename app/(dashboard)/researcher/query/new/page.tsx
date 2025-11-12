@@ -11,8 +11,6 @@ export default async function NewQueryPage() {
     redirect("/");
   }
 
-  }
-
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, #f8f9fa 0%, #e9ecef 100%)' }}>
       <header className="bg-white border-b-2 border-purple-200 shadow-lg mb-8">
