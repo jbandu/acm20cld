@@ -18,6 +18,25 @@ interface UserProfile {
   } | null;
 }
 
+/**
+ * Analyzes if a query is relevant to the organization's focus (cancer research)
+ * Returns true if the query contains cancer-related terms
+ */
+export function isQueryRelevantToOrg(query: string): boolean {
+  const queryLower = query.toLowerCase();
+
+  const cancerTerms = [
+    'cancer', 'oncology', 'oncological', 'tumor', 'tumour', 'neoplasm',
+    'carcinoma', 'sarcoma', 'leukemia', 'lymphoma', 'melanoma',
+    'metastasis', 'metastatic', 'chemotherapy', 'radiotherapy',
+    'immunotherapy', 'car-t', 'checkpoint inhibitor', 'pd-1', 'pd-l1',
+    'ctla-4', 'braf', 'egfr', 'her2', 'kras',
+    'malignancy', 'malignant', 'benign tumor',
+  ];
+
+  return cancerTerms.some(term => queryLower.includes(term));
+}
+
 export function buildUserContext(userProfile: UserProfile | null): string {
   if (!userProfile) {
     return "Researcher context unavailable";
@@ -39,8 +58,19 @@ export function buildUserContext(userProfile: UserProfile | null): string {
   return context;
 }
 
-export function buildOrganizationContext(): string {
-  return "Organization: ACM Biolabs (Cancer Research)";
+export function buildOrganizationContext(query?: string): string {
+  // If no query provided, include context (for backwards compatibility)
+  if (!query) {
+    return "Organization: ACM Biolabs (Cancer Research)";
+  }
+
+  // Only include org context if query is relevant to cancer research
+  if (isQueryRelevantToOrg(query)) {
+    return "Organization: ACM Biolabs (Cancer Research)";
+  }
+
+  // For unrelated queries, return empty string
+  return "";
 }
 
 export function buildResearchPrompt(
@@ -48,10 +78,11 @@ export function buildResearchPrompt(
   userContext: string,
   orgContext: string
 ): string {
-  return `${userContext}
-${orgContext}
+  // Build context lines (only include non-empty contexts)
+  const contextLines = [userContext, orgContext].filter(c => c && c.trim().length > 0);
+  const contextSection = contextLines.length > 0 ? contextLines.join('\n') + '\n\n' : '';
 
-Query: "${query}"
+  return `${contextSection}Query: "${query}"
 
 Provide:
 1. Key findings (3-5 themes)

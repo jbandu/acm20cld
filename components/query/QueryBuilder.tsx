@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { SuggestedQuestions } from "./SuggestedQuestions";
 import { ReviewQueryModal } from "./ReviewQueryModal";
 import { IntelligentQuestions } from "./IntelligentQuestions";
+import { QueryRefinementModal } from "./QueryRefinementModal";
 
 interface UserProfile {
   id: string;
@@ -35,6 +36,8 @@ export function QueryBuilder({ userProfile }: QueryBuilderProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showRefinementModal, setShowRefinementModal] = useState(false);
+  const [reviewedData, setReviewedData] = useState<any>(null);
 
   // Advanced filters
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -95,10 +98,23 @@ export function QueryBuilder({ userProfile }: QueryBuilderProps) {
     setShowReviewModal(true);
   }
 
-  // Actual submission after review
-  async function handleSubmitQuery(reviewedData: any) {
+  // After review modal, show refinement modal
+  function handleReviewComplete(data: any) {
+    setReviewedData(data);
+    setShowReviewModal(false);
+    setShowRefinementModal(true);
+  }
+
+  // Actual submission after refinement
+  async function handleFinalSubmit(refinedQuery: string) {
     setLoading(true);
     setError("");
+
+    // Update the reviewed data with the refined query
+    const finalData = {
+      ...reviewedData,
+      query: refinedQuery,
+    };
 
     try {
       const response = await fetch("/api/query", {
@@ -106,7 +122,7 @@ export function QueryBuilder({ userProfile }: QueryBuilderProps) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(reviewedData),
+        body: JSON.stringify(finalData),
       });
 
       if (!response.ok) {
@@ -119,8 +135,13 @@ export function QueryBuilder({ userProfile }: QueryBuilderProps) {
     } catch (err: any) {
       setError(err.message || "An error occurred");
       setLoading(false);
-      setShowReviewModal(false);
+      setShowRefinementModal(false);
     }
+  }
+
+  // User rejected refinement, use original query
+  function handleRefinementReject() {
+    handleFinalSubmit(reviewedData.query);
   }
 
   return (
@@ -412,9 +433,24 @@ export function QueryBuilder({ userProfile }: QueryBuilderProps) {
             openAccessOnly,
           },
         }}
-        onSubmit={handleSubmitQuery}
+        onSubmit={handleReviewComplete}
         loading={loading}
       />
+
+      {/* Query Refinement Modal */}
+      {reviewedData && (
+        <QueryRefinementModal
+          isOpen={showRefinementModal}
+          originalQuery={reviewedData.query}
+          userContext={{
+            interests: userProfile?.researchProfile?.primaryInterests,
+            expertiseLevel: userProfile?.researchProfile?.expertiseLevel,
+          }}
+          onAccept={handleFinalSubmit}
+          onReject={handleRefinementReject}
+          onClose={() => setShowRefinementModal(false)}
+        />
+      )}
     </div>
   );
 }

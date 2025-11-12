@@ -278,7 +278,7 @@ export function ReviewQueryModal({
   const buildServicePayloads = (): ServicePayload[] => {
     const payloads: ServicePayload[] = [];
     const userContext = buildUserContext(userProfile);
-    const orgContext = buildOrganizationContext();
+    const orgContext = buildOrganizationContext(queryData.query);
 
     // Build LLM prompts
     queryData.llms.forEach((llm) => {
@@ -736,16 +736,43 @@ function buildUserContext(userProfile: UserProfile | null): string {
   return context;
 }
 
-function buildOrganizationContext(): string {
-  return "Organization: ACM Biolabs (Cancer Research)";
+function isQueryRelevantToOrg(query: string): boolean {
+  const queryLower = query.toLowerCase();
+
+  const cancerTerms = [
+    'cancer', 'oncology', 'oncological', 'tumor', 'tumour', 'neoplasm',
+    'carcinoma', 'sarcoma', 'leukemia', 'lymphoma', 'melanoma',
+    'metastasis', 'metastatic', 'chemotherapy', 'radiotherapy',
+    'immunotherapy', 'car-t', 'checkpoint inhibitor', 'pd-1', 'pd-l1',
+    'ctla-4', 'braf', 'egfr', 'her2', 'kras',
+    'malignancy', 'malignant', 'benign tumor',
+  ];
+
+  return cancerTerms.some(term => queryLower.includes(term));
+}
+
+function buildOrganizationContext(query?: string): string {
+  // If no query provided, include context (for backwards compatibility)
+  if (!query) {
+    return "Organization: ACM Biolabs (Cancer Research)";
+  }
+
+  // Only include org context if query is relevant to cancer research
+  if (isQueryRelevantToOrg(query)) {
+    return "Organization: ACM Biolabs (Cancer Research)";
+  }
+
+  // For unrelated queries, return empty string
+  return "";
 }
 
 // LLM prompt builders
 function buildClaudePrompt(queryData: QueryData, userContext: string, orgContext: string): string {
-  return `${userContext}
-${orgContext}
+  // Build context lines (only include non-empty contexts)
+  const contextLines = [userContext, orgContext].filter(c => c && c.trim().length > 0);
+  const contextSection = contextLines.length > 0 ? contextLines.join('\n') + '\n\n' : '';
 
-Query: "${queryData.query}"
+  return `${contextSection}Query: "${queryData.query}"
 Sources: ${queryData.sources.map(s => getSourceName(s)).join(", ")}
 Max results: ${queryData.maxResults}
 
@@ -759,10 +786,11 @@ Keep analysis concise and actionable.`;
 }
 
 function buildGPT4Prompt(queryData: QueryData, userContext: string, orgContext: string): string {
-  return `${userContext}
-${orgContext}
+  // Build context lines (only include non-empty contexts)
+  const contextLines = [userContext, orgContext].filter(c => c && c.trim().length > 0);
+  const contextSection = contextLines.length > 0 ? contextLines.join('\n') + '\n\n' : '';
 
-Query: "${queryData.query}"
+  return `${contextSection}Query: "${queryData.query}"
 Sources: ${queryData.sources.map(s => getSourceName(s)).join(", ")}
 
 Provide alternative analysis perspective:
@@ -774,9 +802,11 @@ Be concise and actionable.`;
 }
 
 function buildOllamaPrompt(queryData: QueryData, userContext: string, orgContext: string): string {
-  return `${userContext}
+  // Build context lines (only include non-empty contexts)
+  const contextLines = [userContext, orgContext].filter(c => c && c.trim().length > 0);
+  const contextSection = contextLines.length > 0 ? contextLines.join('\n') + '\n\n' : '';
 
-Query: "${queryData.query}"
+  return `${contextSection}Query: "${queryData.query}"
 Sources: ${queryData.sources.map(s => getSourceName(s)).join(", ")}
 
 Summarize key findings and suggest follow-ups.`;
