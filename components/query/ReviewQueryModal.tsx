@@ -737,14 +737,7 @@ ${userProfile.researchProfile?.expertiseLevel ? `- Expertise Level: ${userProfil
 ${userProfile.researchProfile?.yearsInField ? `- Years in Field: ${userProfile.researchProfile.yearsInField}` : ''}
 ${interests.length > 0 ? `- Primary Research Interests: ${interests.join(', ')}` : ''}
 ${secondaryInterests.length > 0 ? `- Secondary Interests: ${secondaryInterests.join(', ')}` : ''}
-${researchAreas.length > 0 ? `- Research Areas: ${researchAreas.join(', ')}` : ''}
-
-NOTE: Future enhancements will include:
-- Historical query patterns and preferences
-- Collaboration network and team context
-- Personal research notes and annotations
-- Custom ontology mappings
-- Learned search preferences`;
+${researchAreas.length > 0 ? `- Research Areas: ${researchAreas.join(', ')}` : ''}`;
 }
 
 function buildOrganizationContext(): string {
@@ -771,15 +764,7 @@ Data Governance:
 - HIPAA-compliant data handling
 - Institutional review board protocols
 - Research ethics guidelines
-- IP protection policies
-
-NOTE: Future organizational context will include:
-- Organization-wide knowledge graph connections
-- Shared research ontologies and taxonomies
-- Institutional research priorities and strategic themes
-- Collaborative research networks
-- Internal publication database
-- Custom field and terminology mappings`;
+- IP protection policies`;
 }
 
 // LLM prompt builders
@@ -804,13 +789,6 @@ You are an AI research assistant helping researchers at ACM Biolabs analyze scie
 4. Identify key patterns, trends, and insights
 5. Highlight any contradictions or gaps in the literature
 6. Suggest potential research directions or follow-up queries
-
-NOTE: Additional context will be included in future versions:
-- Knowledge graph connections (related concepts, entities, and relationships)
-- Organization's ontology mappings
-- User's personal research notes and annotations
-- Historical query results and feedback
-- Collaborative filtering from similar researchers
 
 Please provide a comprehensive analysis that helps the researcher understand the landscape of their query.`;
 }
@@ -837,13 +815,6 @@ Your analysis should include:
 - Potential applications and implications for the researcher's work
 - Recommendations for further investigation
 
-NOTE: Future versions will incorporate:
-- Dynamic knowledge graph context
-- Organization-specific ontologies and terminologies
-- User preference learning
-- Cross-reference with internal research database
-- Real-time collaboration signals
-
 Provide actionable insights that support evidence-based research decisions.`;
 }
 
@@ -868,13 +839,6 @@ Provide:
 3. Notable publications or datasets
 4. Research gaps or opportunities
 5. Next steps recommendations
-
-NOTE: Enhanced context coming soon:
-- Knowledge graph integration
-- Custom organization ontologies
-- User research profile
-- Historical search patterns
-- Team collaboration context
 
 Generate a concise, actionable research summary.`;
 }
@@ -909,14 +873,7 @@ function buildOpenAlexQuery(queryData: QueryData): string {
     query += '&' + params.join('&');
   }
 
-  return `${query}
-
-NOTE: Future enhancements will include:
-- Semantic search using knowledge graph embeddings
-- Organization-specific field mappings
-- Custom relevance scoring based on user preferences
-- Automatic concept expansion from ontology
-- Integration with internal citation database`;
+  return query;
 }
 
 function buildPubMedQuery(queryData: QueryData): string {
@@ -948,15 +905,7 @@ function buildPubMedQuery(queryData: QueryData): string {
 ?db=pubmed
 &term=${encodeURIComponent(query)}
 &retmax=${queryData.maxResults}
-&retmode=json
-
-NOTE: Future context additions:
-- MeSH term expansion from custom medical ontology
-- Author disambiguation using knowledge graph
-- Journal impact factor filtering based on org preferences
-- Automatic clinical trial phase detection
-- Cross-reference with internal lab publications
-- Citation network analysis integration`;
+&retmode=json`;
 }
 
 function buildPatentsQuery(queryData: QueryData): string {
@@ -978,16 +927,7 @@ function buildPatentsQuery(queryData: QueryData): string {
     query += '&' + params.join('&');
   }
 
-  return `${query}
-
-NOTE: Future intelligence features:
-- Patent classification mapping to organization taxonomy
-- Inventor network analysis from knowledge graph
-- Technology trend detection
-- Competitive landscape analysis
-- Prior art suggestions from internal R&D database
-- Automated claim analysis and comparison
-- Integration with IP management system`;
+  return query;
 }
 
 function buildFilterDescription(filters: QueryData['filters']): string {
