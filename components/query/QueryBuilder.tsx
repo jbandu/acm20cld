@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SuggestedQuestions } from "./SuggestedQuestions";
 import { ReviewQueryModal } from "./ReviewQueryModal";
+import { IntelligentQuestions } from "./IntelligentQuestions";
 
 interface UserProfile {
   id: string;
@@ -125,6 +126,20 @@ export function QueryBuilder({ userProfile }: QueryBuilderProps) {
   return (
     <div className="space-y-6">
       <form onSubmit={handleReviewQuery} className="space-y-8">
+        {/* Intelligent Question Suggestions */}
+        <IntelligentQuestions
+          userProfile={userProfile}
+          onQuestionClick={(question) => {
+            setQuery(question);
+            // Scroll to query input
+            setTimeout(() => {
+              document.getElementById('query')?.focus();
+            }, 100);
+          }}
+          maxQuestions={5}
+          autoRefresh={true}
+        />
+
         {/* Query Input */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
           <label htmlFor="query" className="block text-base font-semibold text-gray-900 mb-3">

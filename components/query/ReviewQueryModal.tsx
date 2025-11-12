@@ -717,130 +717,69 @@ function getLLMName(llmId: string): string {
 // Context building functions
 function buildUserContext(userProfile: UserProfile | null): string {
   if (!userProfile) {
-    return "User context unavailable";
+    return "Researcher context unavailable";
   }
 
   const interests = userProfile.researchProfile?.primaryInterests || [];
-  const secondaryInterests = userProfile.researchProfile?.secondaryInterests || [];
-  const researchAreas = userProfile.researchProfile?.researchAreas || [];
+  const name = userProfile.name.split(' ')[0]; // First name only for friendliness
 
-  return `=== USER CONTEXT ===
-User: ${userProfile.name}
-Email: ${userProfile.email}
-Role: ${userProfile.role}
-${userProfile.title ? `Title: ${userProfile.title}` : ''}
-${userProfile.department ? `Department: ${userProfile.department}` : ''}
-${userProfile.institution ? `Institution: ${userProfile.institution}` : ''}
+  let context = `Researcher: ${name}`;
 
-Research Profile:
-${userProfile.researchProfile?.expertiseLevel ? `- Expertise Level: ${userProfile.researchProfile.expertiseLevel}` : ''}
-${userProfile.researchProfile?.yearsInField ? `- Years in Field: ${userProfile.researchProfile.yearsInField}` : ''}
-${interests.length > 0 ? `- Primary Research Interests: ${interests.join(', ')}` : ''}
-${secondaryInterests.length > 0 ? `- Secondary Interests: ${secondaryInterests.join(', ')}` : ''}
-${researchAreas.length > 0 ? `- Research Areas: ${researchAreas.join(', ')}` : ''}`;
+  if (userProfile.researchProfile?.expertiseLevel) {
+    context += ` (${userProfile.researchProfile.expertiseLevel})`;
+  }
+
+  if (interests.length > 0) {
+    context += `\nFocus: ${interests.slice(0, 3).join(', ')}`;
+  }
+
+  return context;
 }
 
 function buildOrganizationContext(): string {
-  return `=== ORGANIZATION CONTEXT ===
-Organization: ACM Biolabs
-Institution Type: Advanced Cancer Research Laboratory
-Mission: Accelerating cancer research through AI-powered literature analysis and data integration
-
-Research Focus Areas:
-- Cancer Biology & Therapeutics
-- Immunotherapy & CAR-T Cell Therapy
-- Tumor Microenvironment Research
-- Biomarker Discovery
-- Drug Development & Clinical Trials
-
-Available Resources:
-- Premium access to OpenAlex, PubMed, and Patents databases
-- AI Analysis via Claude (Anthropic) and GPT-4 (OpenAI)
-- Local LLM processing via Ollama
-- Integrated knowledge graph (future)
-- Proprietary ontology system (future)
-
-Data Governance:
-- HIPAA-compliant data handling
-- Institutional review board protocols
-- Research ethics guidelines
-- IP protection policies`;
+  return "Organization: ACM Biolabs (Cancer Research)";
 }
 
 // LLM prompt builders
 function buildClaudePrompt(queryData: QueryData, userContext: string, orgContext: string): string {
-  const filterText = buildFilterDescription(queryData.filters);
-
   return `${userContext}
-
 ${orgContext}
 
-=== RESEARCH QUERY ===
 Query: "${queryData.query}"
-Maximum Results: ${queryData.maxResults}
-${filterText ? `Filters: ${filterText}` : ''}
+Sources: ${queryData.sources.map(s => getSourceName(s)).join(", ")}
+Max results: ${queryData.maxResults}
 
-=== YOUR TASK ===
-You are an AI research assistant helping researchers at ACM Biolabs analyze scientific literature and data. Your task is to:
+Task: Analyze research results and provide:
+1. Key findings (3-5 main themes)
+2. Notable papers or insights
+3. Gaps or contradictions
+4. 2-3 follow-up questions
 
-1. Analyze the research query in the context of the user's research focus and organization's priorities
-2. Review the data retrieved from the following sources: ${queryData.sources.map(s => getSourceName(s)).join(", ")}
-3. Synthesize findings across all sources
-4. Identify key patterns, trends, and insights
-5. Highlight any contradictions or gaps in the literature
-6. Suggest potential research directions or follow-up queries
-
-Please provide a comprehensive analysis that helps the researcher understand the landscape of their query.`;
+Keep analysis concise and actionable.`;
 }
 
 function buildGPT4Prompt(queryData: QueryData, userContext: string, orgContext: string): string {
-  const filterText = buildFilterDescription(queryData.filters);
-
   return `${userContext}
-
 ${orgContext}
 
-=== RESEARCH QUERY ===
 Query: "${queryData.query}"
-Maximum Results: ${queryData.maxResults}
-${filterText ? `Filters: ${filterText}` : ''}
+Sources: ${queryData.sources.map(s => getSourceName(s)).join(", ")}
 
-=== YOUR ROLE ===
-You are a scientific research assistant for ACM Biolabs. Analyze the provided research data and deliver insights that help advance the researcher's work.
+Provide alternative analysis perspective:
+- Key methodologies
+- Research implications
+- Next investigation steps
 
-Your analysis should include:
-- Summary of key findings across all data sources (${queryData.sources.map(s => getSourceName(s)).join(", ")})
-- Identification of most relevant papers, patents, or datasets
-- Analysis of methodologies and approaches used in the literature
-- Potential applications and implications for the researcher's work
-- Recommendations for further investigation
-
-Provide actionable insights that support evidence-based research decisions.`;
+Be concise and actionable.`;
 }
 
 function buildOllamaPrompt(queryData: QueryData, userContext: string, orgContext: string): string {
-  const filterText = buildFilterDescription(queryData.filters);
-
   return `${userContext}
 
-${orgContext}
-
-=== RESEARCH QUERY ===
 Query: "${queryData.query}"
-Maximum Results: ${queryData.maxResults}
-${filterText ? `Filters: ${filterText}` : ''}
+Sources: ${queryData.sources.map(s => getSourceName(s)).join(", ")}
 
-=== ANALYSIS REQUEST ===
-Analyze the research data from: ${queryData.sources.map(s => getSourceName(s)).join(", ")}
-
-Provide:
-1. Overview of findings
-2. Key themes and patterns
-3. Notable publications or datasets
-4. Research gaps or opportunities
-5. Next steps recommendations
-
-Generate a concise, actionable research summary.`;
+Summarize key findings and suggest follow-ups.`;
 }
 
 // Data source query builders
