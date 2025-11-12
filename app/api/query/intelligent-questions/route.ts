@@ -87,12 +87,12 @@ export async function GET() {
         }
 
         // Expertise-level specific question
-        if (expertiseLevel === "Beginner" || expertiseLevel === "Intermediate") {
+        if (expertiseLevel === "STUDENT" || expertiseLevel === "EARLY_CAREER") {
           questions.push({
             id: `profile-${Date.now()}-3`,
             text: `What foundational papers should I read about ${interests[0]}?`,
             category: "profile",
-            reasoning: `Recommended for ${expertiseLevel.toLowerCase()} researchers in ${interests[0]}`,
+            reasoning: `Recommended for early-career researchers in ${interests[0]}`,
             relevanceScore: 88,
           });
         } else {
