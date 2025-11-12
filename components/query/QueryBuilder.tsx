@@ -5,7 +5,28 @@ import { useRouter } from "next/navigation";
 import { SuggestedQuestions } from "./SuggestedQuestions";
 import { ReviewQueryModal } from "./ReviewQueryModal";
 
-export function QueryBuilder() {
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  title?: string | null;
+  department?: string | null;
+  institution?: string | null;
+  researchProfile?: {
+    primaryInterests: string[];
+    secondaryInterests: string[];
+    expertiseLevel: string;
+    yearsInField?: number | null;
+    researchAreas: string[];
+  } | null;
+}
+
+interface QueryBuilderProps {
+  userProfile: UserProfile | null;
+}
+
+export function QueryBuilder({ userProfile }: QueryBuilderProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [sources, setSources] = useState<string[]>(["openalex", "pubmed"]);
@@ -362,6 +383,7 @@ export function QueryBuilder() {
       <ReviewQueryModal
         isOpen={showReviewModal}
         onClose={() => setShowReviewModal(false)}
+        userProfile={userProfile}
         queryData={{
           query,
           sources,

@@ -3,6 +3,23 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  title?: string | null;
+  department?: string | null;
+  institution?: string | null;
+  researchProfile?: {
+    primaryInterests: string[];
+    secondaryInterests: string[];
+    expertiseLevel: string;
+    yearsInField?: number | null;
+    researchAreas: string[];
+  } | null;
+}
+
 interface QueryData {
   query: string;
   sources: string[];
@@ -37,6 +54,7 @@ interface ServicePayload {
 interface ReviewQueryModalProps {
   isOpen: boolean;
   onClose: () => void;
+  userProfile: UserProfile | null;
   queryData: QueryData;
   onSubmit: (selectedData: QueryData) => void;
   loading: boolean;
@@ -45,11 +63,12 @@ interface ReviewQueryModalProps {
 export function ReviewQueryModal({
   isOpen,
   onClose,
+  userProfile,
   queryData,
   onSubmit,
   loading,
 }: ReviewQueryModalProps) {
-  const [showPayloads, setShowPayloads] = useState(false);
+  const [activeTab, setActiveTab] = useState<"summary" | "payloads" | "cost">("summary");
   const [expandedPayloads, setExpandedPayloads] = useState<Set<string>>(new Set());
 
   // Build data elements from query data
@@ -181,9 +200,84 @@ export function ReviewQueryModal({
     });
   };
 
+  // Cost estimation
+  interface CostEstimate {
+    service: string;
+    estimatedCost: number;
+    unit: string;
+    details: string;
+  }
+
+  function estimateQueryCost(queryData: QueryData): {costs: CostEstimate[], total: number} {
+    const costs: CostEstimate[] = [];
+
+    // Data source costs (mostly free APIs, but showing for completeness)
+    queryData.sources.forEach(source => {
+      if (source === "openalex") {
+        costs.push({
+          service: "OpenAlex API",
+          estimatedCost: 0,
+          unit: "Free",
+          details: `${queryData.maxResults} results - Open access scholarly database`
+        });
+      } else if (source === "pubmed") {
+        costs.push({
+          service: "PubMed API",
+          estimatedCost: 0,
+          unit: "Free",
+          details: `${queryData.maxResults} results - NCBI public database`
+        });
+      } else if (source === "patents") {
+        costs.push({
+          service: "Patents API",
+          estimatedCost: 0,
+          unit: "Free",
+          details: `${queryData.maxResults} results - Google Patents public data`
+        });
+      }
+    });
+
+    // LLM costs (actual pricing as of 2024/2025)
+    queryData.llms.forEach(llm => {
+      if (llm === "claude") {
+        // Estimate: ~2000 tokens input (context + query) + ~4000 tokens output
+        // Claude Sonnet 4: $3/MTok input, $15/MTok output
+        const inputCost = (2000 / 1000000) * 3;
+        const outputCost = (4000 / 1000000) * 15;
+        costs.push({
+          service: "Claude (Anthropic)",
+          estimatedCost: inputCost + outputCost,
+          unit: "USD",
+          details: "~2K input tokens + ~4K output tokens (Sonnet 4)"
+        });
+      } else if (llm === "gpt4") {
+        // GPT-4: $10/MTok input, $30/MTok output (approximate)
+        const inputCost = (2000 / 1000000) * 10;
+        const outputCost = (4000 / 1000000) * 30;
+        costs.push({
+          service: "GPT-4 (OpenAI)",
+          estimatedCost: inputCost + outputCost,
+          unit: "USD",
+          details: "~2K input tokens + ~4K output tokens (GPT-4)"
+        });
+      } else if (llm === "ollama") {
+        costs.push({
+          service: "Ollama (Local)",
+          estimatedCost: 0,
+          unit: "Free",
+          details: "Runs locally - no API costs, only compute resources"
+        });
+      }
+    });
+
+    const total = costs.reduce((sum, c) => sum + c.estimatedCost, 0);
+
+    return { costs, total };
+  }
+
   const buildServicePayloads = (): ServicePayload[] => {
     const payloads: ServicePayload[] = [];
-    const userContext = buildUserContext();
+    const userContext = buildUserContext(userProfile);
     const orgContext = buildOrganizationContext();
 
     // Build LLM prompts
@@ -335,10 +429,10 @@ export function ReviewQueryModal({
             {/* View Toggle */}
             <div className="mt-4 flex gap-2">
               <button
-                onClick={() => setShowPayloads(false)}
+                onClick={() => setActiveTab("summary")}
                 disabled={loading}
                 className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all ${
-                  !showPayloads
+                  activeTab === "summary"
                     ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
@@ -346,21 +440,32 @@ export function ReviewQueryModal({
                 Data Summary
               </button>
               <button
-                onClick={() => setShowPayloads(true)}
+                onClick={() => setActiveTab("payloads")}
                 disabled={loading}
                 className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all ${
-                  showPayloads
+                  activeTab === "payloads"
                     ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                 }`}
               >
                 Full Payloads
               </button>
+              <button
+                onClick={() => setActiveTab("cost")}
+                disabled={loading}
+                className={`flex-1 px-4 py-2 rounded-lg font-semibold transition-all ${
+                  activeTab === "cost"
+                    ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                Cost Estimate
+              </button>
             </div>
           </div>
 
           {/* Content */}
-          {!showPayloads ? (
+          {activeTab === "summary" ? (
             // Data Summary View
             <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
               {Object.entries(groupedElements).map(([category, elements]) => (
@@ -413,7 +518,7 @@ export function ReviewQueryModal({
                 </div>
               ))}
             </div>
-          ) : (
+          ) : activeTab === "payloads" ? (
             // Full Payloads View
             <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
               <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4">
@@ -470,6 +575,69 @@ export function ReviewQueryModal({
                   )}
                 </div>
               ))}
+            </div>
+          ) : (
+            // Cost Estimate View
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="text-sm text-green-900">
+                    <strong>Cost Transparency:</strong> Estimated costs for this query based on current API pricing.
+                  </div>
+                </div>
+              </div>
+
+              {(() => {
+                const { costs, total } = estimateQueryCost(queryData);
+                return (
+                  <>
+                    <div className="space-y-3">
+                      {costs.map((cost, idx) => (
+                        <div key={idx} className="bg-white rounded-xl border border-gray-200 p-5">
+                          <div className="flex items-start justify-between mb-2">
+                            <h4 className="font-semibold text-gray-900">{cost.service}</h4>
+                            <div className="text-right">
+                              {cost.estimatedCost === 0 ? (
+                                <span className="text-lg font-bold text-green-600">{cost.unit}</span>
+                              ) : (
+                                <span className="text-lg font-bold text-gray-900">
+                                  ${cost.estimatedCost.toFixed(4)} {cost.unit}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-600">{cost.details}</p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl border-2 border-purple-200 p-6 mt-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-1">Total Estimated Cost</h3>
+                          <p className="text-sm text-gray-600">Per query execution</p>
+                        </div>
+                        <div className="text-right">
+                          {total === 0 ? (
+                            <div className="text-3xl font-bold text-green-600">FREE</div>
+                          ) : (
+                            <div className="text-3xl font-bold text-gray-900">${total.toFixed(4)}</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mt-4">
+                      <p className="text-sm text-yellow-900">
+                        <strong>Note:</strong> Actual costs may vary based on response length and token usage. These are estimates based on typical query patterns. Manager and CEO dashboards track actual spending per researcher.
+                      </p>
+                    </div>
+                  </>
+                );
+              })()}
             </div>
           )}
 
@@ -547,41 +715,71 @@ function getLLMName(llmId: string): string {
 }
 
 // Context building functions
-function buildUserContext(): string {
-  // Placeholder for user/researcher context
-  // In production, this would pull from user profile, preferences, and history
-  return `
-=== USER CONTEXT ===
-Organization: ACM Biolabs
-Researcher: [Current User Name]
-Department: [Research Department]
-Research Focus: [User's primary research areas]
+function buildUserContext(userProfile: UserProfile | null): string {
+  if (!userProfile) {
+    return "User context unavailable";
+  }
+
+  const interests = userProfile.researchProfile?.primaryInterests || [];
+  const secondaryInterests = userProfile.researchProfile?.secondaryInterests || [];
+  const researchAreas = userProfile.researchProfile?.researchAreas || [];
+
+  return `=== USER CONTEXT ===
+User: ${userProfile.name}
+Email: ${userProfile.email}
+Role: ${userProfile.role}
+${userProfile.title ? `Title: ${userProfile.title}` : ''}
+${userProfile.department ? `Department: ${userProfile.department}` : ''}
+${userProfile.institution ? `Institution: ${userProfile.institution}` : ''}
+
+Research Profile:
+${userProfile.researchProfile?.expertiseLevel ? `- Expertise Level: ${userProfile.researchProfile.expertiseLevel}` : ''}
+${userProfile.researchProfile?.yearsInField ? `- Years in Field: ${userProfile.researchProfile.yearsInField}` : ''}
+${interests.length > 0 ? `- Primary Research Interests: ${interests.join(', ')}` : ''}
+${secondaryInterests.length > 0 ? `- Secondary Interests: ${secondaryInterests.join(', ')}` : ''}
+${researchAreas.length > 0 ? `- Research Areas: ${researchAreas.join(', ')}` : ''}
 
 NOTE: Future enhancements will include:
-- User's research history and preferences
-- Previously saved search patterns
-- Preferred data sources and citation styles
-- Custom ontology preferences
-- Collaboration network context
-  `.trim();
+- Historical query patterns and preferences
+- Collaboration network and team context
+- Personal research notes and annotations
+- Custom ontology mappings
+- Learned search preferences`;
 }
 
 function buildOrganizationContext(): string {
-  // Placeholder for organization context
-  return `
-=== ORGANIZATION CONTEXT ===
+  return `=== ORGANIZATION CONTEXT ===
 Organization: ACM Biolabs
-Institution Type: Research Laboratory
-Data Access Level: Premium
-Available Integrations: OpenAlex, PubMed, Patents API, Claude, GPT-4, Ollama
+Institution Type: Advanced Cancer Research Laboratory
+Mission: Accelerating cancer research through AI-powered literature analysis and data integration
 
-NOTE: Future enhancements will include:
-- Organization-wide knowledge graph
-- Shared ontologies and taxonomies
-- Institutional research priorities
-- Compliance and data governance policies
-- Custom field mappings
-  `.trim();
+Research Focus Areas:
+- Cancer Biology & Therapeutics
+- Immunotherapy & CAR-T Cell Therapy
+- Tumor Microenvironment Research
+- Biomarker Discovery
+- Drug Development & Clinical Trials
+
+Available Resources:
+- Premium access to OpenAlex, PubMed, and Patents databases
+- AI Analysis via Claude (Anthropic) and GPT-4 (OpenAI)
+- Local LLM processing via Ollama
+- Integrated knowledge graph (future)
+- Proprietary ontology system (future)
+
+Data Governance:
+- HIPAA-compliant data handling
+- Institutional review board protocols
+- Research ethics guidelines
+- IP protection policies
+
+NOTE: Future organizational context will include:
+- Organization-wide knowledge graph connections
+- Shared research ontologies and taxonomies
+- Institutional research priorities and strategic themes
+- Collaborative research networks
+- Internal publication database
+- Custom field and terminology mappings`;
 }
 
 // LLM prompt builders
