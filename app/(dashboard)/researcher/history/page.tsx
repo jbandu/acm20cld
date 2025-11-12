@@ -11,8 +11,6 @@ export default async function QueryHistoryPage() {
     redirect("/");
   }
 
-  }
-
   const queries = await prisma.query.findMany({
     where: { userId: session.user.id },
     include: {

@@ -11,8 +11,6 @@ async function KnowledgeGraphContent() {
     redirect("/");
   }
 
-  }
-
   // Fetch fresh user data from database
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
