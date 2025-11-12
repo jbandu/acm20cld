@@ -93,6 +93,18 @@ export default async function ManagerDashboard() {
                 Monitor user API usage and rate limits
               </p>
             </Link>
+
+            <Link
+              href="/manager/cost-tracking"
+              className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition p-6 border-2 border-green-200"
+            >
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                💰 Cost Tracking
+              </h3>
+              <p className="text-gray-500">
+                View per-researcher spending and budget forecasts
+              </p>
+            </Link>
           </div>
         </div>
       </main>
