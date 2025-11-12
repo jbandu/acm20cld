@@ -19,9 +19,25 @@ export default async function ManagerDashboard() {
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Manager Dashboard
-            </h1>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Manager Dashboard
+              </h1>
+              <nav className="flex gap-4 mt-2">
+                <Link
+                  href="/researcher"
+                  className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  Researcher Dashboard
+                </Link>
+                <Link
+                  href="/admin/users"
+                  className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  User Management
+                </Link>
+              </nav>
+            </div>
             <p className="text-gray-600">Welcome, {session.user?.name}</p>
           </div>
         </div>

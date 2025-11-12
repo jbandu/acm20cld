@@ -21,10 +21,11 @@ export function ResearcherDashboardClient({
 
   useEffect(() => {
     // Check if we should show welcome flow
-    if (shouldShowWelcome()) {
+    // Don't show if user already has queries or has already seen it
+    if (!hasQueries && shouldShowWelcome()) {
       setShowWelcome(true);
     }
-  }, []);
+  }, [hasQueries, shouldShowWelcome]);
 
   const handleCloseWelcome = () => {
     setShowWelcome(false);
