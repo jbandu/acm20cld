@@ -1,5 +1,3 @@
-import { auth } from "@/lib/auth/auth-config";
-import { redirect } from "next/navigation";
 import { HeroInteractive } from "@/components/marketing/HeroInteractive";
 import { TrustBar } from "@/components/marketing/TrustBar";
 import { ComparisonSection } from "@/components/marketing/ComparisonSection";
@@ -9,20 +7,7 @@ import { TestimonialCarousel } from "@/components/marketing/TestimonialCarousel"
 import { PricingCards } from "@/components/marketing/PricingCards";
 import { FinalCTA } from "@/components/marketing/FinalCTA";
 
-export default async function HomePage() {
-  const session = await auth();
-
-  if (session) {
-    // Redirect based on role
-    if (session.user?.role === "MANAGER") {
-      redirect("/manager");
-    } else if (session.user?.role === "ADMIN") {
-      redirect("/admin/users");
-    } else {
-      redirect("/researcher");
-    }
-  }
-
+export default function MarketingPage() {
   return (
     <main className="min-h-screen">
       {/* Hero Section with Live Data */}
