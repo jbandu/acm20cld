@@ -3,14 +3,41 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SuggestedQuestions } from "./SuggestedQuestions";
+import { ReviewQueryModal } from "./ReviewQueryModal";
+import { IntelligentQuestions } from "./IntelligentQuestions";
+import { QueryRefinementModal } from "./QueryRefinementModal";
 
-export function QueryBuilder() {
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  title?: string | null;
+  department?: string | null;
+  institution?: string | null;
+  researchProfile?: {
+    primaryInterests: string[];
+    secondaryInterests: string[];
+    expertiseLevel: string;
+    yearsInField?: number | null;
+    researchAreas: string[];
+  } | null;
+}
+
+interface QueryBuilderProps {
+  userProfile: UserProfile | null;
+}
+
+export function QueryBuilder({ userProfile }: QueryBuilderProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [sources, setSources] = useState<string[]>(["openalex", "pubmed"]);
   const [llms, setLlms] = useState<string[]>(["claude"]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showRefinementModal, setShowRefinementModal] = useState(false);
+  const [reviewedData, setReviewedData] = useState<any>(null);
 
   // Advanced filters
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -47,7 +74,8 @@ export function QueryBuilder() {
     );
   };
 
-  async function handleSubmit(e: React.FormEvent) {
+  // Show review modal instead of directly submitting
+  function handleReviewQuery(e: React.FormEvent) {
     e.preventDefault();
     setError("");
 
@@ -66,7 +94,27 @@ export function QueryBuilder() {
       return;
     }
 
+    // Show review modal
+    setShowReviewModal(true);
+  }
+
+  // After review modal, show refinement modal
+  function handleReviewComplete(data: any) {
+    setReviewedData(data);
+    setShowReviewModal(false);
+    setShowRefinementModal(true);
+  }
+
+  // Actual submission after refinement
+  async function handleFinalSubmit(refinedQuery: string) {
     setLoading(true);
+    setError("");
+
+    // Update the reviewed data with the refined query
+    const finalData = {
+      ...reviewedData,
+      query: refinedQuery,
+    };
 
     try {
       const response = await fetch("/api/query", {
@@ -74,19 +122,7 @@ export function QueryBuilder() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          query,
-          sources,
-          llms,
-          maxResults,
-          filters: {
-            dateFrom: dateFrom || undefined,
-            dateTo: dateTo || undefined,
-            minCitations: minCitations || undefined,
-            publicationType: publicationType !== "all" ? publicationType : undefined,
-            openAccessOnly,
-          },
-        }),
+        body: JSON.stringify(finalData),
       });
 
       if (!response.ok) {
@@ -99,12 +135,32 @@ export function QueryBuilder() {
     } catch (err: any) {
       setError(err.message || "An error occurred");
       setLoading(false);
+      setShowRefinementModal(false);
     }
+  }
+
+  // User rejected refinement, use original query
+  function handleRefinementReject() {
+    handleFinalSubmit(reviewedData.query);
   }
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleReviewQuery} className="space-y-8">
+        {/* Intelligent Question Suggestions */}
+        <IntelligentQuestions
+          userProfile={userProfile}
+          onQuestionClick={(question) => {
+            setQuery(question);
+            // Scroll to query input
+            setTimeout(() => {
+              document.getElementById('query')?.focus();
+            }, 100);
+          }}
+          maxQuestions={5}
+          autoRefresh={true}
+        />
+
         {/* Query Input */}
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-200">
           <label htmlFor="query" className="block text-base font-semibold text-gray-900 mb-3">
@@ -354,10 +410,47 @@ export function QueryBuilder() {
               Processing Query...
             </span>
           ) : (
-            "Submit Research Query"
+            "Review Query"
           )}
         </button>
       </form>
+
+      {/* Review Modal */}
+      <ReviewQueryModal
+        isOpen={showReviewModal}
+        onClose={() => setShowReviewModal(false)}
+        userProfile={userProfile}
+        queryData={{
+          query,
+          sources,
+          llms,
+          maxResults,
+          filters: {
+            dateFrom: dateFrom || undefined,
+            dateTo: dateTo || undefined,
+            minCitations: minCitations || undefined,
+            publicationType: publicationType !== "all" ? publicationType : undefined,
+            openAccessOnly,
+          },
+        }}
+        onSubmit={handleReviewComplete}
+        loading={loading}
+      />
+
+      {/* Query Refinement Modal */}
+      {reviewedData && (
+        <QueryRefinementModal
+          isOpen={showRefinementModal}
+          originalQuery={reviewedData.query}
+          userContext={{
+            interests: userProfile?.researchProfile?.primaryInterests,
+            expertiseLevel: userProfile?.researchProfile?.expertiseLevel,
+          }}
+          onAccept={handleFinalSubmit}
+          onReject={handleRefinementReject}
+          onClose={() => setShowRefinementModal(false)}
+        />
+      )}
     </div>
   );
 }

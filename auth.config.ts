@@ -33,8 +33,8 @@ export const authConfig = {
           return Response.redirect(new URL("/researcher", nextUrl));
         }
 
-        // Admin routes
-        if (pathname.startsWith("/admin") && role !== "ADMIN") {
+        // Admin routes (accessible by MANAGER and ADMIN)
+        if (pathname.startsWith("/admin") && role !== "ADMIN" && role !== "MANAGER") {
           return Response.redirect(new URL("/researcher", nextUrl));
         }
 

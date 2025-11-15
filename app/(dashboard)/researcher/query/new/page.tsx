@@ -11,7 +11,13 @@ export default async function NewQueryPage() {
     redirect("/");
   }
 
-  }
+  // Fetch full user profile for context
+  const userProfile = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: {
+      researchProfile: true,
+    },
+  });
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(to bottom right, #f8f9fa 0%, #e9ecef 100%)' }}>
@@ -63,7 +69,7 @@ export default async function NewQueryPage() {
           </p>
         </div>
 
-        <QueryBuilder />
+        <QueryBuilder userProfile={userProfile} />
       </main>
     </div>
   );

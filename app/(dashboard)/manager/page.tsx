@@ -5,8 +5,13 @@ import Link from "next/link";
 export default async function ManagerDashboard() {
   const session = await auth();
 
-  if (!session || session.user?.role !== "MANAGER") {
+  if (!session) {
     redirect("/");
+  }
+
+  // Only MANAGER and ADMIN roles can access this page
+  if (session.user?.role !== "MANAGER" && session.user?.role !== "ADMIN") {
+    redirect("/researcher");
   }
 
   return (
@@ -14,9 +19,25 @@ export default async function ManagerDashboard() {
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-900">
-              Manager Dashboard
-            </h1>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Manager Dashboard
+              </h1>
+              <nav className="flex gap-4 mt-2">
+                <Link
+                  href="/researcher"
+                  className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  Researcher Dashboard
+                </Link>
+                <Link
+                  href="/admin/users"
+                  className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                >
+                  User Management
+                </Link>
+              </nav>
+            </div>
             <p className="text-gray-600">Welcome, {session.user?.name}</p>
           </div>
         </div>
@@ -70,6 +91,18 @@ export default async function ManagerDashboard() {
               </h3>
               <p className="text-gray-500">
                 Monitor user API usage and rate limits
+              </p>
+            </Link>
+
+            <Link
+              href="/manager/cost-tracking"
+              className="bg-white overflow-hidden shadow rounded-lg hover:shadow-lg transition p-6 border-2 border-green-200"
+            >
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                💰 Cost Tracking
+              </h3>
+              <p className="text-gray-500">
+                View per-researcher spending and budget forecasts
               </p>
             </Link>
           </div>
