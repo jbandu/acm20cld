@@ -57,6 +57,18 @@ export function LoginForm() {
 
   return (
     <div className="bg-white p-8 rounded-lg shadow-md">
+      {/* Test Accounts Section */}
+      {process.env.NODE_ENV !== 'production' && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+          <h3 className="text-sm font-semibold text-blue-900 mb-2">Test Accounts</h3>
+          <div className="text-xs text-blue-800 space-y-1">
+            <div><strong>researcher@acm.com</strong> - password123</div>
+            <div><strong>manager@acm.com</strong> - password123</div>
+            <div><strong>admin@acm.com</strong> - password123</div>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">

@@ -74,7 +74,7 @@ export function FinalCTA() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
             <motion.a
-              href="/auth/signup"
+              href="/register"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="inline-flex items-center gap-3 px-8 py-5 bg-white text-purple-600 text-lg font-bold rounded-xl shadow-2xl hover:shadow-3xl transition-all"

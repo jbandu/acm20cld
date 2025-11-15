@@ -63,13 +63,13 @@ export default async function HomePage() {
             </div>
             <div className="flex items-center gap-4">
               <Link
-                href="/auth/login"
+                href="/login"
                 className="px-6 py-2.5 text-gray-700 font-semibold hover:text-gray-900 transition-colors"
               >
                 Login
               </Link>
               <Link
-                href="/auth/signup"
+                href="/register"
                 className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all shadow-md hover:shadow-lg"
               >
                 Sign Up
@@ -91,7 +91,7 @@ export default async function HomePage() {
           </p>
           <div className="flex items-center justify-center gap-4">
             <Link
-              href="/auth/signup"
+              href="/register"
               className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-bold text-lg rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl"
             >
               Get Started
@@ -100,7 +100,7 @@ export default async function HomePage() {
               </svg>
             </Link>
             <Link
-              href="/auth/login"
+              href="/login"
               className="inline-flex items-center gap-2 px-8 py-4 bg-white border-2 border-gray-300 text-gray-900 font-bold text-lg rounded-xl hover:border-purple-300 hover:bg-gray-50 transition-all"
             >
               Login
@@ -137,13 +137,13 @@ export default async function HomePage() {
           </p>
           <div className="flex items-center justify-center gap-4">
             <Link
-              href="/auth/signup"
+              href="/register"
               className="px-8 py-4 bg-white text-purple-600 font-bold text-lg rounded-xl hover:bg-gray-50 transition-all shadow-lg"
             >
               Create Account
             </Link>
             <Link
-              href="/auth/login"
+              href="/login"
               className="px-8 py-4 bg-white/10 backdrop-blur-lg border-2 border-white/50 text-white font-bold text-lg rounded-xl hover:bg-white/20 transition-all"
             >
               Login

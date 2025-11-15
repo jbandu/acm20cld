@@ -28,7 +28,7 @@ const pricingTiers: PricingTier[] = [
       "Export to PDF",
       "Community forums",
     ],
-    cta: { text: "Start Free", href: "/auth/signup?plan=academic" },
+    cta: { text: "Start Free", href: "/register?plan=academic" },
     highlighted: false,
   },
   {
@@ -47,7 +47,7 @@ const pricingTiers: PricingTier[] = [
       "Knowledge graph access",
       "API access",
     ],
-    cta: { text: "Start 14-Day Trial", href: "/auth/signup?plan=professional" },
+    cta: { text: "Start 14-Day Trial", href: "/register?plan=professional" },
     highlighted: true,
     badge: "Most Popular",
   },
