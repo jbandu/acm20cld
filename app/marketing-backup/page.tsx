@@ -1,11 +1,11 @@
-import { HeroInteractive } from "@/components/marketing/HeroInteractive";
-import { TrustBar } from "@/components/marketing/TrustBar";
-import { ComparisonSection } from "@/components/marketing/ComparisonSection";
-import { InteractiveDemo } from "@/components/marketing/InteractiveDemo";
-import { FeaturesDetailed } from "@/components/marketing/FeaturesDetailed";
-import { TestimonialCarousel } from "@/components/marketing/TestimonialCarousel";
-import { PricingCards } from "@/components/marketing/PricingCards";
-import { FinalCTA } from "@/components/marketing/FinalCTA";
+import { HeroInteractive } from "@/components/marketing-backup/HeroInteractive";
+import { TrustBar } from "@/components/marketing-backup/TrustBar";
+import { ComparisonSection } from "@/components/marketing-backup/ComparisonSection";
+import { InteractiveDemo } from "@/components/marketing-backup/InteractiveDemo";
+import { FeaturesDetailed } from "@/components/marketing-backup/FeaturesDetailed";
+import { TestimonialCarousel } from "@/components/marketing-backup/TestimonialCarousel";
+import { PricingCards } from "@/components/marketing-backup/PricingCards";
+import { FinalCTA } from "@/components/marketing-backup/FinalCTA";
 
 export default function MarketingPage() {
   return (
